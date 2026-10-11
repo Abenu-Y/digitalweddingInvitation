@@ -148,17 +148,31 @@ END:VCALENDAR`;
           transition={{ delay: 0.8, duration: 0.8 }}
           className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-10 text-xs sm:text-sm"
         >
-          <div className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-stone-900/80 border border-amber-500/30 backdrop-blur-md shadow-lg text-amber-200">
-            <Calendar className="w-4 h-4 text-amber-400" />
-            <span className="font-semibold">
+          <div
+            style={{
+              backgroundColor: `${activeTheme.cardBgHex}cc`,
+              borderColor: activeTheme.cardBorderHex,
+            }}
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl border backdrop-blur-md shadow-lg"
+          >
+            <Calendar className="w-4 h-4" style={{ color: activeTheme.accentHex }} />
+            <span className="font-semibold" style={{ color: activeTheme.secondaryTextHex }}>
               Sunday, November 15, 2026
             </span>
-            <span className="text-amber-400/60 font-amharic">({weddingData.weddingDateAmharic})</span>
+            <span className="font-amharic opacity-80" style={{ color: activeTheme.accentHex }}>
+              ({weddingData.weddingDateAmharic})
+            </span>
           </div>
 
-          <div className="flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-stone-900/80 border border-amber-500/30 backdrop-blur-md shadow-lg text-amber-200">
-            <MapPin className="w-4 h-4 text-amber-400" />
-            <span>{weddingData.weddingLocationCity}</span>
+          <div
+            style={{
+              backgroundColor: `${activeTheme.cardBgHex}cc`,
+              borderColor: activeTheme.cardBorderHex,
+            }}
+            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl border backdrop-blur-md shadow-lg"
+          >
+            <MapPin className="w-4 h-4" style={{ color: activeTheme.accentHex }} />
+            <span style={{ color: activeTheme.secondaryTextHex }}>{weddingData.weddingLocationCity}</span>
           </div>
         </motion.div>
 
@@ -169,7 +183,10 @@ END:VCALENDAR`;
           transition={{ delay: 1, duration: 0.8 }}
           className="w-full max-w-xl mb-10"
         >
-          <div className="text-[11px] uppercase tracking-[0.25em] text-amber-300 font-cinzel font-semibold mb-3 text-center">
+          <div
+            style={{ color: activeTheme.accentHex }}
+            className="text-[11px] uppercase tracking-[0.25em] font-cinzel font-semibold mb-3 text-center"
+          >
             {language === 'am' ? 'የቀረው ጊዜ (ቆጠራ)' : 'COUNTING DOWN TO FOREVER'}
           </div>
 
@@ -182,12 +199,23 @@ END:VCALENDAR`;
             ].map((item, idx) => (
               <div
                 key={idx}
-                className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl bg-[#141926]/90 border border-amber-500/35 shadow-xl backdrop-blur-md group hover:border-amber-400 transition-colors"
+                style={{
+                  backgroundColor: activeTheme.cardBgHex,
+                  borderColor: activeTheme.cardBorderHex,
+                  boxShadow: `0 10px 25px rgba(0,0,0,0.5), 0 0 20px ${activeTheme.glowColor}`
+                }}
+                className="flex flex-col items-center justify-center p-3 sm:p-4 rounded-xl border backdrop-blur-md group transition-all"
               >
-                <span className="text-2xl sm:text-4xl font-cinzel font-bold text-amber-300">
+                <span
+                  style={{ color: activeTheme.accentHex }}
+                  className="text-2xl sm:text-4xl font-cinzel font-bold"
+                >
                   {String(item.value).padStart(2, '0')}
                 </span>
-                <span className="text-[10px] sm:text-xs text-stone-400 uppercase tracking-wider mt-1">
+                <span
+                  style={{ color: activeTheme.secondaryTextHex }}
+                  className="text-[10px] sm:text-xs uppercase tracking-wider mt-1 opacity-80"
+                >
                   {language === 'en' ? item.labelEn : item.labelAm}
                 </span>
               </div>
@@ -206,7 +234,12 @@ END:VCALENDAR`;
           <div className="relative">
             <button
               onClick={() => setCalendarOpen(!calendarOpen)}
-              className="flex items-center space-x-2 px-6 py-3 rounded-full bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-stone-950 font-semibold text-xs sm:text-sm shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:shadow-[0_0_35px_rgba(212,175,55,0.6)] transform hover:-translate-y-0.5 transition-all"
+              style={{
+                background: activeTheme.primaryButtonGradient,
+                color: activeTheme.primaryButtonTextColor,
+                boxShadow: `0 0 25px ${activeTheme.glowColor}`
+              }}
+              className="flex items-center space-x-2 px-6 py-3 rounded-full font-semibold text-xs sm:text-sm transform hover:-translate-y-0.5 transition-all"
             >
               <Calendar className="w-4 h-4" />
               <span>{language === 'am' ? 'ቀኑን በመቁጠሪያ መዝግብ' : 'Save To Calendar'}</span>
@@ -214,7 +247,14 @@ END:VCALENDAR`;
             </button>
 
             {calendarOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 bg-[#161a24] border border-amber-500/40 rounded-xl shadow-2xl p-2 z-30 animate-in fade-in zoom-in-95 duration-200">
+              <div
+                style={{
+                  backgroundColor: activeTheme.cardBgHex,
+                  borderColor: activeTheme.cardBorderHex,
+                  boxShadow: `0 15px 40px rgba(0,0,0,0.8), 0 0 20px ${activeTheme.glowColor}`
+                }}
+                className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 border rounded-xl p-2 z-30 animate-in fade-in zoom-in-95 duration-200"
+              >
                 <a
                   href={googleCalendarUrl()}
                   target="_blank"

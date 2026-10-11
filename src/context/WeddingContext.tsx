@@ -125,6 +125,7 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const activeTheme: ThemeConfig = THEME_CONFIGS[activeThemeId] || THEME_CONFIGS['emerald-velvet'];
 
   const setDefaultTheme = (themeId: ThemeId) => {
+    setPreviewThemeId(null);
     updateWeddingData({ defaultTheme: themeId });
   };
 

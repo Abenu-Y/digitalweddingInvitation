@@ -7,7 +7,7 @@ import { useWedding } from '@/context/WeddingContext';
 import { Heart, CheckCircle2, Send } from 'lucide-react';
 
 export const RsvpSection: React.FC = () => {
-  const { weddingData, currentGuest, submitGuestRsvp, language } = useWedding();
+  const { weddingData, currentGuest, submitGuestRsvp, language, activeTheme } = useWedding();
 
   const [selectedGuestId, setSelectedGuestId] = useState<string>('');
   const [submitted, setSubmitted] = useState<boolean>(false);
@@ -75,7 +75,12 @@ export const RsvpSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.7 }}
-          className="rounded-3xl p-6 sm:p-10 bg-[#141824]/90 border border-amber-500/30 shadow-2xl backdrop-blur-xl"
+          style={{
+            backgroundColor: activeTheme.cardBgHex,
+            borderColor: activeTheme.cardBorderHex,
+            boxShadow: `0 25px 60px rgba(0,0,0,0.8), 0 0 35px ${activeTheme.glowColor}`,
+          }}
+          className="rounded-3xl p-6 sm:p-10 border backdrop-blur-xl transition-all"
         >
           {submitted ? (
             /* Success View */
@@ -155,7 +160,12 @@ export const RsvpSection: React.FC = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3.5 rounded-full bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-stone-950 font-bold text-sm shadow-[0_0_25px_rgba(212,175,55,0.4)] hover:shadow-[0_0_35px_rgba(212,175,55,0.6)] transform hover:-translate-y-0.5 transition-all flex items-center justify-center space-x-2 cursor-pointer"
+                style={{
+                  background: activeTheme.primaryButtonGradient,
+                  color: activeTheme.primaryButtonTextColor,
+                  boxShadow: `0 0 25px ${activeTheme.glowColor}`,
+                }}
+                className="w-full py-3.5 rounded-full font-bold text-sm transform hover:-translate-y-0.5 transition-all flex items-center justify-center space-x-2 cursor-pointer"
               >
                 <Send className="w-4 h-4" />
                 <span>{language === 'am' ? 'መገኘቴን አረጋግጥ (Confirm RSVP)' : 'Submit Wedding RSVP'}</span>

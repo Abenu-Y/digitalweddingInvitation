@@ -9,7 +9,7 @@ import { EthiopianCalendarCard } from '../calendar/EthiopianCalendarCard';
 import { useWedding } from '@/context/WeddingContext';
 
 export const ScrollLockedStoryCard: React.FC = () => {
-  const { weddingData } = useWedding();
+  const { weddingData, activeTheme } = useWedding();
   const containerRef = useRef<HTMLDivElement>(null);
   const [activeSlide, setActiveSlide] = useState<number>(0);
 
@@ -170,25 +170,26 @@ export const ScrollLockedStoryCard: React.FC = () => {
                 <div
                   key={idx}
                   onClick={() => scrollToSlide(idx)}
-                  className="h-1.5 flex-1 rounded-full cursor-pointer overflow-hidden bg-black/60 border border-white/10 transition-all hover:border-[#d4af37]/60"
+                  className="h-1.5 flex-1 rounded-full cursor-pointer overflow-hidden bg-black/60 border border-white/10 transition-all"
                 >
                   <div
-                    className={`h-full transition-all duration-300 ${
-                      idx === activeSlide
-                        ? 'bg-[#edd58a]'
-                        : idx < activeSlide
-                        ? 'bg-[#edd58a]/60'
-                        : 'bg-white/20'
-                    }`}
+                    style={{
+                      backgroundColor: idx <= activeSlide ? activeTheme.accentHex : 'rgba(255,255,255,0.2)',
+                      boxShadow: idx === activeSlide ? `0 0 10px ${activeTheme.glowColor}` : 'none',
+                    }}
+                    className="h-full transition-all duration-300"
                   />
                 </div>
               ))}
             </div>
 
             {/* Title & Indicator Info */}
-            <div className="flex items-center justify-between w-full text-xs text-[#edd58a] font-cinzel">
+            <div
+              style={{ color: activeTheme.accentHex }}
+              className="flex items-center justify-between w-full text-xs font-cinzel"
+            >
               <span className="flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-[#d4af37]" />
+                <Sparkles className="w-3.5 h-3.5" style={{ color: activeTheme.accentHex }} />
                 <span className="font-bold">{slides[activeSlide].number}. {slides[activeSlide].title}</span>
                 <span className="text-stone-500">•</span>
                 <span className="font-amharic text-stone-300">{slides[activeSlide].titleAmharic}</span>
@@ -204,7 +205,13 @@ export const ScrollLockedStoryCard: React.FC = () => {
             {/* Previous Arrow Button (<) */}
             <button
               onClick={handlePrev}
-              className="absolute -left-3 sm:-left-7 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/75 hover:bg-black border border-[#d4af37]/60 text-[#edd58a] hover:text-white flex items-center justify-center z-30 backdrop-blur-md transition-all shadow-[0_4px_20px_rgba(0,0,0,0.8)] active:scale-95 group"
+              style={{
+                backgroundColor: `${activeTheme.cardBgHex}ea`,
+                borderColor: activeTheme.cardBorderHex,
+                color: activeTheme.accentHex,
+                boxShadow: `0 4px 20px rgba(0,0,0,0.8), 0 0 15px ${activeTheme.glowColor}`,
+              }}
+              className="absolute -left-3 sm:-left-7 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border flex items-center justify-center z-30 backdrop-blur-md transition-all active:scale-95 group hover:scale-105"
               aria-label="Previous card"
             >
               <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
@@ -229,7 +236,13 @@ export const ScrollLockedStoryCard: React.FC = () => {
             {/* Next Arrow Button (>) */}
             <button
               onClick={handleNext}
-              className="absolute -right-3 sm:-right-7 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full bg-black/75 hover:bg-black border border-[#d4af37]/60 text-[#edd58a] hover:text-white flex items-center justify-center z-30 backdrop-blur-md transition-all shadow-[0_4px_20px_rgba(0,0,0,0.8)] active:scale-95 group"
+              style={{
+                backgroundColor: `${activeTheme.cardBgHex}ea`,
+                borderColor: activeTheme.cardBorderHex,
+                color: activeTheme.accentHex,
+                boxShadow: `0 4px 20px rgba(0,0,0,0.8), 0 0 15px ${activeTheme.glowColor}`,
+              }}
+              className="absolute -right-3 sm:-right-7 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border flex items-center justify-center z-30 backdrop-blur-md transition-all active:scale-95 group hover:scale-105"
               aria-label="Next card"
             >
               <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
@@ -242,11 +255,21 @@ export const ScrollLockedStoryCard: React.FC = () => {
               <button
                 key={s.id}
                 onClick={() => scrollToSlide(idx)}
-                className={`px-3 py-1 rounded-full text-[11px] font-cinzel transition-all border ${
+                style={
                   activeSlide === idx
-                    ? 'bg-[#d4af37]/30 text-[#edd58a] border-[#d4af37] shadow-[0_0_15px_rgba(212,175,55,0.3)]'
-                    : 'bg-black/40 text-stone-400 border-white/10 hover:border-white/30'
-                }`}
+                    ? {
+                        backgroundColor: `${activeTheme.cardBgHex}cc`,
+                        color: activeTheme.accentHex,
+                        borderColor: activeTheme.highlightHex,
+                        boxShadow: `0 0 15px ${activeTheme.glowColor}`,
+                      }
+                    : {
+                        backgroundColor: 'rgba(0,0,0,0.4)',
+                        color: '#9ca3af',
+                        borderColor: 'rgba(255,255,255,0.1)',
+                      }
+                }
+                className="px-3 py-1 rounded-full text-[11px] font-cinzel transition-all border"
               >
                 {s.number}. {s.title}
               </button>

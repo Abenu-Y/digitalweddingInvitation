@@ -40,8 +40,13 @@ export const ScheduleTimeline: React.FC = () => {
 
         {/* Timeline Items */}
         <div className="relative">
-          {/* Central Golden Vertical Spine */}
-          <div className="absolute left-4 sm:left-1/2 top-4 bottom-4 w-0.5 bg-gradient-to-b from-amber-500 via-amber-300 to-amber-700 -translate-x-1/2 opacity-40" />
+          {/* Central Vertical Spine */}
+          <div
+            style={{
+              background: `linear-gradient(to bottom, ${activeTheme.accentHex}, ${activeTheme.highlightHex}, ${activeTheme.accentHex})`,
+            }}
+            className="absolute left-4 sm:left-1/2 top-4 bottom-4 w-0.5 -translate-x-1/2 opacity-40"
+          />
 
           <div className="space-y-8 sm:space-y-12">
             {weddingData.schedule.map((item, index) => {
@@ -63,13 +68,23 @@ export const ScheduleTimeline: React.FC = () => {
                   {/* Content Card */}
                   <div className={`w-full sm:w-[calc(50%-2.5rem)] pl-12 sm:pl-0 ${isEven ? 'sm:text-right' : 'sm:text-left'}`}>
                     <div
-                      className={`p-5 sm:p-6 rounded-2xl bg-[#141824]/90 border border-amber-500/25 shadow-xl backdrop-blur-md hover:border-amber-400/50 transition-all ${
+                      style={{
+                        backgroundColor: activeTheme.cardBgHex,
+                        borderColor: activeTheme.cardBorderHex,
+                        boxShadow: `0 15px 35px rgba(0,0,0,0.6), 0 0 15px ${activeTheme.glowColor}`,
+                      }}
+                      className={`p-5 sm:p-6 rounded-2xl border backdrop-blur-md transition-all ${
                         !isInvited ? 'opacity-50' : ''
                       }`}
                     >
                       {/* Time Badge */}
                       <div
-                        className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-300 text-xs font-semibold mb-2.5 ${
+                        style={{
+                          backgroundColor: `${activeTheme.cardBgHex}cc`,
+                          borderColor: activeTheme.cardBorderHex,
+                          color: activeTheme.accentHex,
+                        }}
+                        className={`inline-flex items-center space-x-1.5 px-3 py-1 rounded-full border text-xs font-semibold mb-2.5 ${
                           isEven ? 'sm:flex-row-reverse sm:space-x-reverse' : ''
                         }`}
                       >
@@ -77,10 +92,16 @@ export const ScheduleTimeline: React.FC = () => {
                         <span>{item.time}</span>
                       </div>
 
-                      <h3 className="text-lg sm:text-xl font-cinzel font-bold text-amber-100">
+                      <h3
+                        style={{ color: activeTheme.secondaryTextHex }}
+                        className="text-lg sm:text-xl font-cinzel font-bold"
+                      >
                         {item.title}
                       </h3>
-                      <p className="text-sm font-amharic text-amber-300 font-medium mt-0.5">
+                      <p
+                        style={{ color: activeTheme.accentHex }}
+                        className="text-sm font-amharic font-medium mt-0.5"
+                      >
                         {item.titleAmharic}
                       </p>
 

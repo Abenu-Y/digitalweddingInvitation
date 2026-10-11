@@ -190,10 +190,15 @@ export const ThemesManagerTab: React.FC = () => {
             return (
               <div
                 key={theme.id}
+                style={{
+                  backgroundColor: `${theme.cardBgHex}f5`,
+                  borderColor: isCurrentDefault ? theme.highlightHex : theme.cardBorderHex,
+                  boxShadow: isCurrentDefault
+                    ? `0 12px 35px ${theme.glowColor}, 0 0 25px ${theme.glowColor}`
+                    : 'none',
+                }}
                 className={`p-6 rounded-2xl flex flex-col justify-between transition-all duration-300 border ${
-                  isCurrentDefault
-                    ? 'bg-[#0e271f] border-[#d4af37] shadow-[0_10px_30px_rgba(212,175,55,0.25)] ring-1 ring-[#d4af37]/50'
-                    : 'bg-[#141824] border-white/10 hover:border-amber-400/40'
+                  isCurrentDefault ? 'ring-2 ring-white/30' : 'hover:border-white/40'
                 }`}
               >
                 <div>
@@ -203,21 +208,27 @@ export const ThemesManagerTab: React.FC = () => {
                       <h4 className="font-serif font-bold text-base text-white">
                         {theme.name}
                       </h4>
-                      <p className="text-xs font-amharic text-amber-300 font-medium">
+                      <p className="text-xs font-amharic font-medium mt-0.5" style={{ color: theme.accentHex }}>
                         {theme.nameAmharic}
                       </p>
                     </div>
 
                     {isCurrentDefault && (
-                      <span className="flex items-center space-x-1 px-2.5 py-0.5 rounded-full bg-[#d4af37] text-stone-950 font-bold text-[10px] shrink-0">
+                      <span
+                        style={{
+                          backgroundColor: theme.accentHex,
+                          color: theme.primaryButtonTextColor,
+                        }}
+                        className="flex items-center space-x-1 px-2.5 py-0.5 rounded-full font-bold text-[10px] shrink-0 shadow"
+                      >
                         <Check className="w-3 h-3" />
-                        <span>DEFAULT</span>
+                        <span>ACTIVE</span>
                       </span>
                     )}
                   </div>
 
                   {/* Theme Color Swatches Preview */}
-                  <div className="mb-4 p-3 rounded-xl bg-black/40 border border-white/10 space-y-2">
+                  <div className="mb-4 p-3 rounded-xl bg-black/50 border border-white/10 space-y-2">
                     <span className="text-[10px] uppercase tracking-wider text-stone-400 font-semibold block">
                       Color Palette & Texture:
                     </span>
@@ -225,19 +236,19 @@ export const ThemesManagerTab: React.FC = () => {
                       {/* Background sample */}
                       <div
                         className="w-8 h-8 rounded-lg border border-white/20 shadow-inner"
-                        style={{ backgroundColor: theme.envelopeColor }}
-                        title="Background Base"
+                        style={{ backgroundColor: theme.cardBgHex }}
+                        title="Background Surface"
                       />
                       {/* Card surface sample */}
                       <div
                         className="w-8 h-8 rounded-lg border border-white/20 shadow-inner"
                         style={{ backgroundColor: theme.envelopeLining }}
-                        title="Card Accent"
+                        title="Envelope Lining"
                       />
-                      {/* Gold accent sample */}
+                      {/* Metallic accent sample */}
                       <div
                         className="w-8 h-8 rounded-lg border border-white/20 shadow-inner flex items-center justify-center font-bold text-[10px]"
-                        style={{ backgroundColor: theme.sealBorder, color: '#111' }}
+                        style={{ backgroundColor: theme.accentHex, color: theme.primaryButtonTextColor }}
                         title="Metallic Accent"
                       >
                         ✦
@@ -263,14 +274,27 @@ export const ThemesManagerTab: React.FC = () => {
                 <div className="space-y-2 pt-2 border-t border-white/10">
                   {/* Set As Default Button */}
                   {isCurrentDefault ? (
-                    <div className="w-full py-2 rounded-xl bg-[#d4af37]/20 border border-[#d4af37] text-[#edd58a] text-xs font-bold text-center flex items-center justify-center space-x-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-[#d4af37]" />
+                    <div
+                      style={{
+                        backgroundColor: `${theme.cardBgHex}`,
+                        borderColor: theme.highlightHex,
+                        color: theme.accentHex,
+                        boxShadow: `0 0 15px ${theme.glowColor}`,
+                      }}
+                      className="w-full py-2 rounded-xl border text-xs font-bold text-center flex items-center justify-center space-x-1.5"
+                    >
+                      <CheckCircle2 className="w-4 h-4" />
                       <span>ዋናው ገጽታ ነው (Currently Active)</span>
                     </div>
                   ) : (
                     <button
                       onClick={() => setDefaultTheme(theme.id)}
-                      className="w-full py-2 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-stone-950 font-bold text-xs hover:shadow-lg hover:shadow-amber-500/25 transition-all"
+                      style={{
+                        background: theme.primaryButtonGradient,
+                        color: theme.primaryButtonTextColor,
+                        boxShadow: `0 0 15px ${theme.glowColor}`,
+                      }}
+                      className="w-full py-2 rounded-xl font-bold text-xs hover:opacity-95 transition-all shadow cursor-pointer"
                     >
                       ዋናው ገጽታ አድርግ (Make Default)
                     </button>

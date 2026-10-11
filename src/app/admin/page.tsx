@@ -39,7 +39,10 @@ import {
   Gauge,
   Key,
   AlertCircle,
-  AlertTriangle
+  AlertTriangle,
+  Menu,
+  X,
+  Layers
 } from 'lucide-react';
 import { ThemesManagerTab } from '@/components/admin/ThemesManagerTab';
 import { AutoScrollSpeedCard } from '@/components/admin/AutoScrollSpeedCard';
@@ -147,6 +150,7 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState<
     'overview' | 'themes' | 'speed' | 'guests' | 'wedding-info' | 'schedule' | 'venues' | 'banks' | 'dresscode' | 'wishes'
   >('themes');
+  const [mobileNavOpen, setMobileNavOpen] = useState<boolean>(false);
 
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [copiedMessageSlug, setCopiedMessageSlug] = useState<string | null>(null);
@@ -321,43 +325,41 @@ export default function AdminPage() {
             <Settings className="w-8 h-8 text-amber-400 animate-[spin_10s_linear_infinite]" />
           </div>
 
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleLogin} autoComplete="off" spellCheck={false} className="space-y-4">
             <div className="text-left space-y-1">
               <label className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">
                 Username
               </label>
               <input
                 type="text"
+                name="wedding_admin_username_field"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
                 value={username}
                 onChange={(e) => {
                   setUsername(e.target.value);
                   setLoginError('');
                 }}
-                placeholder="Enter username (e.g. jerusalem or admin)"
+                placeholder="Enter username"
                 autoFocus
                 className="w-full px-4 py-2.5 rounded-xl bg-black/60 border border-amber-500/30 text-amber-100 placeholder:text-stone-600 focus:outline-none focus:border-amber-400 text-sm"
               />
             </div>
 
             <div className="text-left space-y-1">
-              <div className="flex items-center justify-between">
-                <label className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">
-                  6-Digit OTP
-                </label>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setUsername('jerusalem');
-                    setOtp(weddingData.adminPasscode || '772019');
-                    setLoginError('');
-                  }}
-                  className="text-[10px] text-amber-400/90 hover:text-amber-300 underline font-mono"
-                >
-                  Auto-Fill ({weddingData.adminPasscode || '772019'})
-                </button>
-              </div>
+              <label className="text-[11px] font-semibold uppercase tracking-wider text-stone-400">
+                6-Digit Passcode
+              </label>
               <input
-                type="text"
+                type="password"
+                name="wedding_admin_otp_code"
+                autoComplete="new-password"
+                autoCorrect="off"
+                autoCapitalize="none"
+                spellCheck={false}
+                inputMode="numeric"
                 maxLength={6}
                 value={otp}
                 onChange={(e) => {
@@ -394,6 +396,70 @@ export default function AdminPage() {
       </div>
     );
   }
+
+  const currentTheme = THEME_CONFIGS[weddingData.defaultTheme] || THEME_CONFIGS['emerald-velvet'];
+
+  interface AdminCategoryItem {
+    id: 'overview' | 'themes' | 'speed' | 'guests' | 'wedding-info' | 'schedule' | 'venues' | 'banks' | 'dresscode' | 'wishes';
+    label: string;
+    icon: React.ElementType;
+    badge?: number | string;
+  }
+
+  interface AdminCategoryGroup {
+    id: string;
+    title: string;
+    icon: React.ElementType;
+    items: AdminCategoryItem[];
+  }
+
+  const categories: AdminCategoryGroup[] = [
+    {
+      id: 'design',
+      title: adminLang === 'en' ? '1. Design & Timing' : '፩. ገጽታና ፍጥነት',
+      icon: Palette,
+      items: [
+        { id: 'themes', label: adminLang === 'en' ? 'Themes & Styles' : 'የገጽታ ምርጫዎች', icon: Palette },
+        { id: 'speed', label: adminLang === 'en' ? 'Auto-Scroll & Timing' : 'የስክሮል ፍጥነትና ቆይታ', icon: Gauge },
+      ],
+    },
+    {
+      id: 'guests-rsvp',
+      title: adminLang === 'en' ? '2. Guests & RSVP' : '፪. ተጋባዦችና ምላሽ',
+      icon: Users,
+      items: [
+        { id: 'overview', label: adminLang === 'en' ? 'Overview & RSVP Stats' : 'አጠቃላይ የሰርግ መረጃ', icon: Users },
+        { id: 'guests', label: adminLang === 'en' ? 'Guest Invitations' : 'የተጋባዦች ዝርዝር', icon: Sparkles, badge: weddingData.guests.length },
+      ],
+    },
+    {
+      id: 'wedding-event',
+      title: adminLang === 'en' ? '3. Wedding & Event' : '፫. የሰርግ ዝርዝሮች',
+      icon: Calendar,
+      items: [
+        { id: 'wedding-info', label: adminLang === 'en' ? 'Couple & Details' : 'የሙሽሮች ዝርዝር', icon: Settings },
+        { id: 'schedule', label: adminLang === 'en' ? 'Schedule & Programs' : 'መርሐ-ግብር', icon: Clock },
+      ],
+    },
+    {
+      id: 'logistics',
+      title: adminLang === 'en' ? '4. Venues & Gifts' : '፬. ቦታዎችና ስጦታ',
+      icon: MapPin,
+      items: [
+        { id: 'venues', label: adminLang === 'en' ? 'Venues & Google Maps' : 'የሰርግ አዳራሾችና ካርታ', icon: MapPin },
+        { id: 'banks', label: adminLang === 'en' ? 'Bank & Registry' : 'የባንክ ሂሳቦች', icon: Gift },
+        { id: 'dresscode', label: adminLang === 'en' ? 'Dress Code' : 'የአለባበስ ስርዓት', icon: Shirt },
+      ],
+    },
+    {
+      id: 'guestbook',
+      title: adminLang === 'en' ? '5. Guestbook' : '፭. የምርቃት መልእክት',
+      icon: MessageSquare,
+      items: [
+        { id: 'wishes', label: adminLang === 'en' ? 'Wishes Moderation' : 'የምርቃት መልእክቶች', icon: MessageSquare, badge: weddingData.wishes.length },
+      ],
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-[#090b10] text-[#f5f5f7] pb-20">
@@ -468,41 +534,152 @@ export default function AdminPage() {
         </div>
       </header>
 
-      {/* Admin Navigation Tabs - 100% Clean English by default */}
-      <div className="bg-[#121622] border-b border-white/10 px-4 sm:px-8 py-2 overflow-x-auto">
-        <div className="flex space-x-2 min-w-max">
-          {[
-            { id: 'themes', label: adminLang === 'en' ? 'Themes & Styles' : 'ገጽታዎች', icon: Palette },
-            { id: 'speed', label: adminLang === 'en' ? 'Auto-Scroll Speed' : 'የስክሮል ፍጥነት', icon: Gauge },
-            { id: 'overview', label: adminLang === 'en' ? 'Overview & RSVP Stats' : 'አጠቃላይ መረጃ', icon: Users },
-            { id: 'guests', label: adminLang === 'en' ? 'Guest Personalization' : 'የተጋባዦች ዝርዝር', icon: Sparkles },
-            { id: 'wedding-info', label: adminLang === 'en' ? 'Wedding Details' : 'የሰርግ ዝርዝሮች', icon: Settings },
-            { id: 'schedule', label: adminLang === 'en' ? 'Schedule & Programs' : 'መርሐ-ግብር', icon: Calendar },
-            { id: 'venues', label: adminLang === 'en' ? 'Venues & Maps' : 'ቦታዎችና ካርታ', icon: MapPin },
-            { id: 'banks', label: adminLang === 'en' ? 'Bank & Registry' : 'የባንክ ሂሳብ', icon: Gift },
-            { id: 'dresscode', label: adminLang === 'en' ? 'Dress Code' : 'የአለባበስ ስርዓት', icon: Shirt },
-            { id: 'wishes', label: adminLang === 'en' ? `Guestbook Wishes (${weddingData.wishes.length})` : `የምርቃት መልእክቶች (${weddingData.wishes.length})`, icon: MessageSquare },
-          ].map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center space-x-2 px-4 py-2 rounded-xl text-xs font-semibold transition-all ${
-                  activeTab === tab.id
-                    ? 'bg-amber-500 text-stone-950 shadow-md font-bold'
-                    : 'text-stone-300 hover:text-white hover:bg-white/5'
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                <span>{tab.label}</span>
-              </button>
-            );
-          })}
+      {/* 2-Column Responsive Layout: 5 Grouped Categories in a Sidebar */}
+      <div className="flex flex-col lg:flex-row min-h-[calc(100vh-61px)]">
+        {/* Mobile Category Header & Drawer Toggle */}
+        <div className="lg:hidden bg-[#0e131d] border-b border-white/10 px-4 py-3 flex items-center justify-between sticky top-[61px] z-30">
+          <div className="flex items-center space-x-2">
+            <span className="text-[11px] uppercase tracking-wider text-amber-400 font-bold">Category:</span>
+            <span className="text-xs text-white font-semibold">
+              {categories.find((c) => c.items.some((i) => i.id === activeTab))?.title}
+            </span>
+          </div>
+          <button
+            onClick={() => setMobileNavOpen(!mobileNavOpen)}
+            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-300 text-xs font-bold"
+          >
+            {mobileNavOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
+            <span>Categories (5)</span>
+          </button>
         </div>
-      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8">
+        {/* Sidebar Navigation: 5 Clear Categorized Groups */}
+        <aside
+          className={`${
+            mobileNavOpen ? 'block' : 'hidden'
+          } lg:block w-full lg:w-72 shrink-0 bg-[#0c1018] border-b lg:border-b-0 lg:border-r border-white/10 p-4 lg:p-5 flex flex-col justify-between sticky top-[61px] lg:h-[calc(100vh-61px)] overflow-y-auto z-20`}
+        >
+          <div className="space-y-6">
+            <div className="hidden lg:flex items-center space-x-2 px-2 py-1 text-xs text-stone-400 font-semibold border-b border-white/5 pb-2">
+              <Layers className="w-4 h-4 text-amber-400" />
+              <span className="uppercase tracking-wider font-cinzel text-amber-200">Admin Categories (5)</span>
+            </div>
+
+            {categories.map((cat) => (
+              <div key={cat.id} className="space-y-1.5">
+                <div className="flex items-center space-x-2 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-300/80">
+                  <cat.icon className="w-3.5 h-3.5 text-amber-400" />
+                  <span>{cat.title}</span>
+                </div>
+
+                <div className="space-y-1 pl-1">
+                  {cat.items.map((item) => {
+                    const ItemIcon = item.icon;
+                    const isActive = activeTab === item.id;
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => {
+                          setActiveTab(item.id as any);
+                          setMobileNavOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                          isActive
+                            ? 'bg-amber-500 text-stone-950 shadow-md font-bold'
+                            : 'text-stone-300 hover:text-white hover:bg-white/5'
+                        }`}
+                      >
+                        <div className="flex items-center space-x-2.5 min-w-0">
+                          <ItemIcon className={`w-4 h-4 shrink-0 ${isActive ? 'text-stone-950' : 'text-stone-400'}`} />
+                          <span className="truncate">{item.label}</span>
+                        </div>
+                        {item.badge !== undefined && (
+                          <span
+                            className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1.5 ${
+                              isActive ? 'bg-black/30 text-stone-950' : 'bg-white/10 text-stone-300'
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Live Preview Status Widget inside sidebar */}
+          <div className="mt-8 pt-4 border-t border-white/10 space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300/80 font-cinzel">
+                Live Status Preview
+              </span>
+              <span
+                className="w-2.5 h-2.5 rounded-full animate-pulse"
+                style={{ backgroundColor: currentTheme.accentHex }}
+              />
+            </div>
+
+            {/* Current Default Theme Banner */}
+            <div className="p-3 rounded-xl bg-black/40 border border-white/10 space-y-1.5">
+              <div className="flex items-center space-x-2">
+                <div
+                  className="w-4 h-4 rounded-full border border-white/30 shrink-0"
+                  style={{ backgroundColor: currentTheme.sealColor }}
+                />
+                <span className="text-xs font-bold text-white truncate">{currentTheme.name}</span>
+              </div>
+              <p className="text-[10px] text-stone-400 font-amharic truncate">{currentTheme.nameAmharic}</p>
+            </div>
+
+            {/* Story Sections Visibility Quick Toggles */}
+            <div className="space-y-1 text-xs">
+              <div className="flex items-center justify-between py-1 px-2 rounded-lg bg-black/30">
+                <span className="text-[11px] text-stone-300">Love Story (Pic 2)</span>
+                <button
+                  type="button"
+                  onClick={() => updateWeddingData({ showLoveStory: !weddingData.showLoveStory })}
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    weddingData.showLoveStory
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-stone-800 text-stone-400'
+                  }`}
+                >
+                  {weddingData.showLoveStory ? 'VISIBLE' : 'HIDDEN'}
+                </button>
+              </div>
+
+              <div className="flex items-center justify-between py-1 px-2 rounded-lg bg-black/30">
+                <span className="text-[11px] text-stone-300">Photo Gallery (Pic 3)</span>
+                <button
+                  type="button"
+                  onClick={() => updateWeddingData({ showGallery: !weddingData.showGallery })}
+                  className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    weddingData.showGallery
+                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                      : 'bg-stone-800 text-stone-400'
+                  }`}
+                >
+                  {weddingData.showGallery ? 'VISIBLE' : 'HIDDEN'}
+                </button>
+              </div>
+            </div>
+
+            <a
+              href="/"
+              target="_blank"
+              className="w-full flex items-center justify-center space-x-1.5 py-2 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/40 text-amber-200 text-xs font-semibold transition-all shadow"
+            >
+              <Eye className="w-3.5 h-3.5" />
+              <span>Open Live Site ↗</span>
+            </a>
+          </div>
+        </aside>
+
+        {/* Right Content Panel */}
+        <main className="flex-1 min-w-0 p-4 sm:p-8 lg:p-10 max-w-7xl">
         {/* TAB: SCROLL SPEED & TIMING CONTROL */}
         {activeTab === 'speed' && (
           <div className="space-y-6">
@@ -1499,6 +1676,7 @@ export default function AdminPage() {
             </div>
           </div>
         )}
+        </main>
       </div>
 
       {/* GUEST ADD / EDIT MODAL (Key Requirement for Custom Message & Themes) */}
