@@ -24,11 +24,11 @@ export const ThemesManagerTab: React.FC = () => {
 
   const [copiedThemeId, setCopiedThemeId] = useState<string | null>(null);
   const [shareRecipientName, setShareRecipientName] = useState<string>('');
-  const [selectedShareTheme, setSelectedShareTheme] = useState<ThemeId>('emerald-velvet');
+  const [selectedShareTheme, setSelectedShareTheme] = useState<ThemeId>('habesha-gold');
   const [copiedShareText, setCopiedShareText] = useState<boolean>(false);
 
   const themeList = Object.values(THEME_CONFIGS) as ThemeConfig[];
-  const currentDefaultTheme = THEME_CONFIGS[weddingData.defaultTheme] || THEME_CONFIGS['emerald-velvet'];
+  const currentDefaultTheme = THEME_CONFIGS[weddingData.defaultTheme] || THEME_CONFIGS['habesha-gold'];
 
   const getThemeUrl = (themeId: ThemeId) => {
     if (typeof window === 'undefined') return `/?theme=${themeId}`;

@@ -72,9 +72,11 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(initialWeddingData));
         } else {
           // Merge defaults with saved user edits so no custom setting is lost
+          const defaultTheme = parsed.defaultTheme === 'emerald-velvet' ? 'habesha-gold' : (parsed.defaultTheme || 'habesha-gold');
           setWeddingData({
             ...initialWeddingData,
             ...parsed,
+            defaultTheme,
           });
         }
       }
@@ -121,8 +123,8 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   // Determine active theme (Preview Override -> Guest's personal theme -> Wedding default theme -> fallback)
   const activeThemeId: ThemeId =
-    previewThemeId || currentGuest?.themeId || weddingData.defaultTheme || 'emerald-velvet';
-  const activeTheme: ThemeConfig = THEME_CONFIGS[activeThemeId] || THEME_CONFIGS['emerald-velvet'];
+    previewThemeId || currentGuest?.themeId || weddingData.defaultTheme || 'habesha-gold';
+  const activeTheme: ThemeConfig = THEME_CONFIGS[activeThemeId] || THEME_CONFIGS['habesha-gold'];
 
   const setDefaultTheme = (themeId: ThemeId) => {
     setPreviewThemeId(null);

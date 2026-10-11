@@ -26,7 +26,7 @@ export const initialWeddingData: WeddingData = {
   globalInvitationMessageAmharic:
     "በዚህ ውብ እና የተቀደሰ ቀን አብረውን በመሆን ደስታችንን እንድትጋሩ በታላቅ ክብር እንጋብዝዎታለን። መገኘትዎ እና ምርቃትዎ ለእኛ ትልቅ ዋጋ አለው። በፍቅር እና በአክብሮት፣",
 
-  defaultTheme: "emerald-velvet",
+  defaultTheme: "habesha-gold",
   backgroundMusicUrl: "https://assets.mixkit.co/music/preview/mixkit-romantic-wedding-piano-melody-671.mp3",
   backgroundMusicTitle: "Romantic Wedding Piano (የሰርግ ዜማ)",
 

@@ -397,7 +397,7 @@ export default function AdminPage() {
     );
   }
 
-  const currentTheme = THEME_CONFIGS[weddingData.defaultTheme] || THEME_CONFIGS['emerald-velvet'];
+  const currentTheme = THEME_CONFIGS[weddingData.defaultTheme] || THEME_CONFIGS['habesha-gold'];
 
   interface AdminCategoryItem {
     id: 'overview' | 'themes' | 'speed' | 'guests' | 'wedding-info' | 'schedule' | 'venues' | 'banks' | 'dresscode' | 'wishes';

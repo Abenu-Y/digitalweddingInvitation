@@ -83,8 +83,18 @@ END:VCALENDAR`;
           className="absolute inset-0 bg-cover bg-center filter brightness-[0.35] scale-105 transition-transform duration-10000"
           style={{ backgroundImage: `url(${weddingData.heroImageUrl})` }}
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0b0d13] via-[#0b0d13]/70 to-[#0b0d13]/50" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-[#0b0d13]/60 to-[#0b0d13]" />
+        <div
+          style={{
+            background: `linear-gradient(to top, ${activeTheme.cardBgHex}fb 0%, ${activeTheme.cardBgHex}a6 50%, ${activeTheme.cardBgHex}80 100%)`,
+          }}
+          className="absolute inset-0"
+        />
+        <div
+          style={{
+            background: `radial-gradient(ellipse at center, transparent 0%, ${activeTheme.cardBgHex}88 65%, ${activeTheme.cardBgHex}f0 100%)`,
+          }}
+          className="absolute inset-0"
+        />
       </div>
 
       {/* Hero Content Container */}
