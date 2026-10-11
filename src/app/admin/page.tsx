@@ -42,7 +42,11 @@ import {
   AlertTriangle,
   Menu,
   X,
-  Layers
+  Layers,
+  ChevronDown,
+  ChevronsUpDown,
+  PanelLeftClose,
+  PanelLeftOpen
 } from 'lucide-react';
 import { ThemesManagerTab } from '@/components/admin/ThemesManagerTab';
 import { AutoScrollSpeedCard } from '@/components/admin/AutoScrollSpeedCard';
@@ -151,6 +155,31 @@ export default function AdminPage() {
     'overview' | 'themes' | 'speed' | 'guests' | 'wedding-info' | 'schedule' | 'venues' | 'banks' | 'dresscode' | 'wishes'
   >('themes');
   const [mobileNavOpen, setMobileNavOpen] = useState<boolean>(false);
+
+  // Category accordion state - default is compressed (all categories collapsed) as requested!
+  const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
+  // Sidebar full collapse/expand state for desktop
+  const [isSidebarCompressed, setIsSidebarCompressed] = useState<boolean>(false);
+
+  const toggleCategory = (catId: string) => {
+    setExpandedCategories((prev) => ({
+      ...prev,
+      [catId]: !prev[catId],
+    }));
+  };
+
+  const toggleAllCategories = () => {
+    const isAnyExpanded = Object.values(expandedCategories).some(Boolean);
+    if (isAnyExpanded) {
+      setExpandedCategories({});
+    } else {
+      const all: Record<string, boolean> = {};
+      categories.forEach((c) => {
+        all[c.id] = true;
+      });
+      setExpandedCategories(all);
+    }
+  };
 
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
   const [copiedMessageSlug, setCopiedMessageSlug] = useState<string | null>(null);
@@ -557,61 +586,149 @@ export default function AdminPage() {
         <aside
           className={`${
             mobileNavOpen ? 'block' : 'hidden'
-          } lg:block w-full lg:w-72 shrink-0 bg-[#0c1018] border-b lg:border-b-0 lg:border-r border-white/10 p-4 lg:p-5 flex flex-col justify-between sticky top-[61px] lg:h-[calc(100vh-61px)] overflow-y-auto z-20`}
+          } lg:block w-full ${isSidebarCompressed ? 'lg:w-20' : 'lg:w-72'} shrink-0 bg-[#0c1018] border-b lg:border-b-0 lg:border-r border-white/10 p-3 lg:p-4 flex flex-col justify-between sticky top-[61px] lg:h-[calc(100vh-61px)] overflow-y-auto z-20 transition-all duration-300`}
         >
-          <div className="space-y-6">
-            <div className="hidden lg:flex items-center space-x-2 px-2 py-1 text-xs text-stone-400 font-semibold border-b border-white/5 pb-2">
-              <Layers className="w-4 h-4 text-amber-400" />
-              <span className="uppercase tracking-wider font-cinzel text-amber-200">Admin Categories (5)</span>
+          <div className="space-y-4">
+            {/* Top Categories Bar with Expand All / Compress All & Sidebar Toggle */}
+            <div className="flex items-center justify-between px-1 py-1 text-xs text-stone-400 font-semibold border-b border-white/5 pb-2">
+              {!isSidebarCompressed && (
+                <div className="flex items-center space-x-2">
+                  <Layers className="w-4 h-4 text-amber-400" />
+                  <span className="uppercase tracking-wider font-cinzel text-amber-200 text-[11px]">Categories (5)</span>
+                </div>
+              )}
+              <div className="flex items-center space-x-1.5 ml-auto">
+                {!isSidebarCompressed && (
+                  <button
+                    onClick={toggleAllCategories}
+                    className="inline-flex items-center space-x-1 px-2 py-1 rounded-lg bg-stone-900 border border-stone-800 text-[10px] font-semibold text-stone-300 hover:text-amber-300 hover:border-amber-500/40 transition-all"
+                    title={Object.values(expandedCategories).some(Boolean) ? 'Compress All Categories' : 'Expand All Categories'}
+                  >
+                    <ChevronsUpDown className="w-3 h-3 text-amber-400" />
+                    <span>{Object.values(expandedCategories).some(Boolean) ? 'Compress All' : 'Expand All'}</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => setIsSidebarCompressed(!isSidebarCompressed)}
+                  className="hidden lg:inline-flex items-center justify-center p-1.5 rounded-lg bg-stone-900 border border-stone-800 text-stone-400 hover:text-amber-300 hover:border-amber-500/40 transition-all"
+                  title={isSidebarCompressed ? 'Expand Sidebar Width' : 'Compress Sidebar Width'}
+                >
+                  {isSidebarCompressed ? <PanelLeftOpen className="w-4 h-4 text-amber-400" /> : <PanelLeftClose className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
-            {categories.map((cat) => (
-              <div key={cat.id} className="space-y-1.5">
-                <div className="flex items-center space-x-2 px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider text-amber-300/80">
-                  <cat.icon className="w-3.5 h-3.5 text-amber-400" />
-                  <span>{cat.title}</span>
-                </div>
+            {/* 5 Categorized Groups: Default is compressed, each can be individually expanded/compressed */}
+            <div className="space-y-2">
+              {categories.map((cat) => {
+                const isExpanded = !!expandedCategories[cat.id];
+                const isCatActive = cat.items.some((i) => i.id === activeTab);
 
-                <div className="space-y-1 pl-1">
-                  {cat.items.map((item) => {
-                    const ItemIcon = item.icon;
-                    const isActive = activeTab === item.id;
-                    return (
+                if (isSidebarCompressed) {
+                  // Compact Rail Icon Mode when sidebar is compressed
+                  return (
+                    <div key={cat.id} className="relative group">
                       <button
-                        key={item.id}
                         onClick={() => {
-                          setActiveTab(item.id as any);
-                          setMobileNavOpen(false);
+                          setIsSidebarCompressed(false);
+                          toggleCategory(cat.id);
                         }}
-                        className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
-                          isActive
-                            ? 'bg-amber-500 text-stone-950 shadow-md font-bold'
-                            : 'text-stone-300 hover:text-white hover:bg-white/5'
+                        className={`w-full flex flex-col items-center justify-center p-2.5 rounded-xl transition-all ${
+                          isCatActive
+                            ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40 shadow-sm'
+                            : 'text-stone-400 hover:text-white hover:bg-white/5'
                         }`}
+                        title={cat.title}
                       >
-                        <div className="flex items-center space-x-2.5 min-w-0">
-                          <ItemIcon className={`w-4 h-4 shrink-0 ${isActive ? 'text-stone-950' : 'text-stone-400'}`} />
-                          <span className="truncate">{item.label}</span>
-                        </div>
-                        {item.badge !== undefined && (
-                          <span
-                            className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1.5 ${
-                              isActive ? 'bg-black/30 text-stone-950' : 'bg-white/10 text-stone-300'
-                            }`}
-                          >
-                            {item.badge}
-                          </span>
+                        <cat.icon className="w-5 h-5 text-amber-400 mb-1" />
+                        <span className="text-[9px] font-bold font-mono text-stone-400">
+                          {cat.items.length}
+                        </span>
+                        {isCatActive && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-1" />
                         )}
                       </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+                    </div>
+                  );
+                }
+
+                // Normal Mode: Accordion Category (Default is compressed)
+                return (
+                  <div key={cat.id} className="rounded-2xl bg-black/30 border border-white/5 overflow-hidden transition-all">
+                    {/* Accordion Category Header Button */}
+                    <button
+                      onClick={() => toggleCategory(cat.id)}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 text-xs font-bold uppercase tracking-wider transition-all ${
+                        isCatActive
+                          ? 'bg-amber-500/15 text-amber-300 border-b border-amber-500/20'
+                          : 'text-stone-300 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      <div className="flex items-center space-x-2.5 min-w-0">
+                        <cat.icon className="w-3.5 h-3.5 text-amber-400 shrink-0" />
+                        <span className="truncate text-[11px]">{cat.title}</span>
+                        {isCatActive && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 shrink-0 animate-pulse" />
+                        )}
+                      </div>
+                      <div className="flex items-center space-x-1.5 shrink-0 text-stone-400">
+                        <span className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-stone-900 border border-stone-800 text-stone-300">
+                          {cat.items.length}
+                        </span>
+                        {isExpanded ? (
+                          <ChevronDown className="w-3.5 h-3.5 text-amber-400 transition-transform" />
+                        ) : (
+                          <ChevronRight className="w-3.5 h-3.5 text-stone-400 transition-transform" />
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Accordion Sub-Items: Hidden by default (compressed), visible when expanded */}
+                    {isExpanded && (
+                      <div className="p-1.5 space-y-1 bg-black/20 border-t border-white/5 animate-in fade-in duration-200">
+                        {cat.items.map((item) => {
+                          const ItemIcon = item.icon;
+                          const isActive = activeTab === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              onClick={() => {
+                                setActiveTab(item.id as any);
+                                setMobileNavOpen(false);
+                              }}
+                              className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all ${
+                                isActive
+                                  ? 'bg-amber-500 text-stone-950 shadow-md font-bold'
+                                  : 'text-stone-300 hover:text-white hover:bg-white/5'
+                              }`}
+                            >
+                              <div className="flex items-center space-x-2.5 min-w-0">
+                                <ItemIcon className={`w-3.5 h-3.5 shrink-0 ${isActive ? 'text-stone-950' : 'text-stone-400'}`} />
+                                <span className="truncate">{item.label}</span>
+                              </div>
+                              {item.badge !== undefined && (
+                                <span
+                                  className={`text-[10px] px-1.5 py-0.5 rounded-full font-bold ml-1.5 ${
+                                    isActive ? 'bg-black/30 text-stone-950' : 'bg-white/10 text-stone-300'
+                                  }`}
+                                >
+                                  {item.badge}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
-          {/* Live Preview Status Widget inside sidebar */}
-          <div className="mt-8 pt-4 border-t border-white/10 space-y-3">
+          {/* Live Preview Status Widget inside sidebar (shown when sidebar is expanded) */}
+          {!isSidebarCompressed && (
+            <div className="mt-8 pt-4 border-t border-white/10 space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300/80 font-cinzel">
                 Live Status Preview
@@ -676,6 +793,7 @@ export default function AdminPage() {
               <span>Open Live Site ↗</span>
             </a>
           </div>
+        )}
         </aside>
 
         {/* Right Content Panel */}

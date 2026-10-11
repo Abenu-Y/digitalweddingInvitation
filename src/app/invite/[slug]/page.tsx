@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import { useWedding } from '@/context/WeddingContext';
 import { AudioPlayer } from '@/components/common/AudioPlayer';
 import { AutoScrollController } from '@/components/common/AutoScrollController';
+import { WaxSealEnvelope } from '@/components/envelope/WaxSealEnvelope';
 import { HeroSection } from '@/components/hero/HeroSection';
 import { ScrollLockedStoryCard } from '@/components/showcase/ScrollLockedStoryCard';
 import { BoldScrollCountdown } from '@/components/countdown/BoldScrollCountdown';
@@ -31,6 +32,9 @@ export default function InviteGuestPage() {
     <main
       className={`min-h-screen bg-gradient-to-b ${activeTheme.bgGradient} transition-colors duration-700 relative`}
     >
+      {/* Royal 3D Wax Seal Envelope Entrance Overlay */}
+      <WaxSealEnvelope />
+
       {/* Background Audio Player and Natural Auto-Scroll Controller */}
       <AudioPlayer />
       <AutoScrollController speedPixelsPerSecond={40} initialActive={true} />

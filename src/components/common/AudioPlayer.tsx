@@ -4,14 +4,27 @@ import React, { useRef, useEffect } from 'react';
 import { useWedding } from '@/context/WeddingContext';
 import { Music, Pause, Play, Sparkles } from 'lucide-react';
 
+const START_TIME_SECONDS = 40; // Starts from 40 seconds as requested
+
 export const AudioPlayer: React.FC = () => {
   const { weddingData, isPlayingMusic, toggleMusic, setPlayingMusic } = useWedding();
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const seekToStartTime = () => {
+    if (audioRef.current && audioRef.current.currentTime < START_TIME_SECONDS) {
+      try {
+        audioRef.current.currentTime = START_TIME_SECONDS;
+      } catch (e) {
+        // Can fail if metadata not ready yet
+      }
+    }
+  };
 
   useEffect(() => {
     if (!audioRef.current) return;
     
     if (isPlayingMusic) {
+      seekToStartTime();
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
         playPromise.catch((error) => {
@@ -24,13 +37,34 @@ export const AudioPlayer: React.FC = () => {
     }
   }, [isPlayingMusic, setPlayingMusic]);
 
+  const handleLoadedMetadata = () => {
+    seekToStartTime();
+  };
+
+  const handleTimeUpdate = () => {
+    // If looped back to beginning, skip directly to 40 seconds
+    if (audioRef.current && audioRef.current.currentTime < START_TIME_SECONDS - 1) {
+      audioRef.current.currentTime = START_TIME_SECONDS;
+    }
+  };
+
+  const handleEnded = () => {
+    if (audioRef.current) {
+      audioRef.current.currentTime = START_TIME_SECONDS;
+      audioRef.current.play().catch(() => {});
+    }
+  };
+
   return (
     <>
       <audio
         ref={audioRef}
-        src={weddingData.backgroundMusicUrl}
+        src={weddingData.backgroundMusicUrl || '/G&B wedding (6).mp3'}
         loop
         preload="auto"
+        onLoadedMetadata={handleLoadedMetadata}
+        onTimeUpdate={handleTimeUpdate}
+        onEnded={handleEnded}
       />
 
       {/* Floating Mini Player Widget at Bottom Left */}

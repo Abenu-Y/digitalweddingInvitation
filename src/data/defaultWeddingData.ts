@@ -27,8 +27,8 @@ export const initialWeddingData: WeddingData = {
     "በዚህ ውብ እና የተቀደሰ ቀን አብረውን በመሆን ደስታችንን እንድትጋሩ በታላቅ ክብር እንጋብዝዎታለን። መገኘትዎ እና ምርቃትዎ ለእኛ ትልቅ ዋጋ አለው። በፍቅር እና በአክብሮት፣",
 
   defaultTheme: "habesha-gold",
-  backgroundMusicUrl: "https://assets.mixkit.co/music/preview/mixkit-romantic-wedding-piano-melody-671.mp3",
-  backgroundMusicTitle: "Romantic Wedding Piano (የሰርግ ዜማ)",
+  backgroundMusicUrl: "/G&B wedding (6).mp3",
+  backgroundMusicTitle: "Hosni & Jerusalem Royal Melody (የሰርግ ዜማ)",
 
   heroImageUrl: "/images/ethiopian_wedding_couple.jpg",
   coupleAvatarUrl: "/images/ethiopian_couple_holding_hands.jpg",

@@ -73,10 +73,19 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         } else {
           // Merge defaults with saved user edits so no custom setting is lost
           const defaultTheme = parsed.defaultTheme === 'emerald-velvet' ? 'habesha-gold' : (parsed.defaultTheme || 'habesha-gold');
+          const backgroundMusicUrl = (!parsed.backgroundMusicUrl || parsed.backgroundMusicUrl.includes('mixkit'))
+            ? '/G&B wedding (6).mp3'
+            : parsed.backgroundMusicUrl;
+          const backgroundMusicTitle = (!parsed.backgroundMusicTitle || parsed.backgroundMusicTitle.includes('Piano'))
+            ? 'Hosni & Jerusalem Royal Melody (የሰርግ ዜማ)'
+            : parsed.backgroundMusicTitle;
+
           setWeddingData({
             ...initialWeddingData,
             ...parsed,
             defaultTheme,
+            backgroundMusicUrl,
+            backgroundMusicTitle,
           });
         }
       }
