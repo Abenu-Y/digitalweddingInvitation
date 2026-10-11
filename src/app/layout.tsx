@@ -3,13 +3,28 @@ import "./globals.css";
 import { WeddingProvider } from "@/context/WeddingContext";
 
 export const metadata: Metadata = {
-  title: "Hosni & Jerusalem | Save The Date (የሰርግ ጥሪ)",
+  title: "Hosni & Jerusalem | Save The Date",
   description: "Join us in celebrating the holy matrimony and wedding of Hosni Mubarek & Jerusalem Alemayehu at Lideta Mekane Yesus, Addis Ababa. እሑድ፣ ህዳር 6፣ 2019 ዓ.ም (November 15, 2026).",
-  keywords: ["Hosni and Jerusalem", "Wedding Invitation", "Yene Serg", "የሰርግ ጥሪ", "Habesha Wedding", "Ethiopian Wedding", "ልደታ መካነየሱስ"],
+  keywords: ["Hosni and Jerusalem", "Wedding Invitation", "Yene Serg", "Habesha Wedding", "Ethiopian Wedding", "ልደታ መካነየሱስ"],
+  metadataBase: new URL('https://digitalweddinginvitation.vercel.app'),
   openGraph: {
-    title: "Hosni & Jerusalem - Save The Date (ዲጂታል የሰርግ ጥሪ)",
-    description: "You are cordially invited to celebrate our wedding at Lideta Mekane Yesus. Click to view our wedding invitation.",
+    title: "Hosni & Jerusalem | Save The Date",
+    description: "You are cordially invited to celebrate the royal wedding of Hosni & Jerusalem. Click to open your invitation.",
     type: "website",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Hosni & Jerusalem Royal Wedding Celebration",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Hosni & Jerusalem | Save The Date",
+    description: "You are cordially invited to celebrate the royal wedding of Hosni & Jerusalem. Click to open your invitation.",
+    images: ["/og-image.png"],
   },
   icons: {
     icon: [

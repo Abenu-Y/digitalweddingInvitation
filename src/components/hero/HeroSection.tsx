@@ -147,8 +147,8 @@ END:VCALENDAR`;
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1, duration: 0.8 }}
-          className="w-full max-w-xl mb-10"
+          transition={{ delay: 0.7, duration: 0.8 }}
+          className="w-full max-w-xl mb-10 mt-36 sm:mt-24 md:mt-16"
         >
           <div
             style={{ color: activeTheme.accentHex }}

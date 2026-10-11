@@ -66,8 +66,11 @@ export const ScrollLockedStoryCard: React.FC = () => {
     },
   ];
 
+  const isProgrammaticScroll = useRef<boolean>(false);
+
   // High-performance direct scroll calculation that NEVER gets stuck on desktop or mobile
   const updateSlideFromScroll = useCallback(() => {
+    if (isProgrammaticScroll.current) return;
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const windowH = window.innerHeight;
@@ -108,6 +111,7 @@ export const ScrollLockedStoryCard: React.FC = () => {
     if (durationSec <= 0) return; // 0 = manual scroll only
 
     const timer = setInterval(() => {
+      if (isProgrammaticScroll.current) return;
       if (!containerRef.current) return;
       const rect = containerRef.current.getBoundingClientRect();
       const windowH = window.innerHeight;
@@ -122,26 +126,33 @@ export const ScrollLockedStoryCard: React.FC = () => {
   }, [weddingData.storyCardDurationSeconds, slides.length]);
 
   const scrollToSlide = (targetIndex: number) => {
+    isProgrammaticScroll.current = true;
     setActiveSlide(targetIndex);
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const scrollTop = window.scrollY || document.documentElement.scrollTop;
-    const startY = scrollTop + rect.top;
-    const totalTravel = containerRef.current.offsetHeight - window.innerHeight;
-    
-    // Position targets: slide 0 -> 10%, slide 1 -> 50%, slide 2 -> 90%
-    const progressOffsets = [0.10, 0.50, 0.90];
-    const targetY = startY + progressOffsets[targetIndex] * totalTravel;
-    window.scrollTo({ top: targetY, behavior: 'smooth' });
+    if (containerRef.current) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const scrollTop = window.scrollY || document.documentElement.scrollTop;
+      const startY = scrollTop + rect.top;
+      const totalTravel = containerRef.current.offsetHeight - window.innerHeight;
+      
+      // Position targets: slide 0 -> 10%, slide 1 -> 50%, slide 2 -> 90%
+      const progressOffsets = [0.10, 0.50, 0.90];
+      const targetY = startY + progressOffsets[targetIndex] * totalTravel;
+      window.scrollTo({ top: targetY, behavior: 'smooth' });
+    }
+    setTimeout(() => {
+      isProgrammaticScroll.current = false;
+    }, 1000);
   };
 
   const handleNext = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const nextIndex = (activeSlide + 1) % slides.length;
     scrollToSlide(nextIndex);
   };
 
   const handlePrev = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     const prevIndex = (activeSlide - 1 + slides.length) % slides.length;
     scrollToSlide(prevIndex);
