@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useWedding } from '@/context/WeddingContext';
-import { Calendar, Clock, MapPin, Download, Heart, ChevronDown, Sparkles } from 'lucide-react';
+import { Calendar, Clock, Download, Heart, ChevronDown, Sparkles } from 'lucide-react';
 
 export const HeroSection: React.FC = () => {
   const { weddingData, language, activeTheme } = useWedding();
@@ -141,50 +141,7 @@ END:VCALENDAR`;
           </p>
         </motion.div>
 
-        {/* Parents' Honor Note */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.8 }}
-          className="text-xs sm:text-sm text-stone-300/80 max-w-lg mb-8"
-        >
-          <p>{weddingData.groomParents} & {weddingData.brideParents}</p>
-        </motion.div>
 
-        {/* Date & Location Badges */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.8 }}
-          className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mb-10 text-xs sm:text-sm"
-        >
-          <div
-            style={{
-              backgroundColor: `${activeTheme.cardBgHex}cc`,
-              borderColor: activeTheme.cardBorderHex,
-            }}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl border backdrop-blur-md shadow-lg"
-          >
-            <Calendar className="w-4 h-4" style={{ color: activeTheme.accentHex }} />
-            <span className="font-semibold" style={{ color: activeTheme.secondaryTextHex }}>
-              Sunday, November 15, 2026
-            </span>
-            <span className="font-amharic opacity-80" style={{ color: activeTheme.accentHex }}>
-              ({weddingData.weddingDateAmharic})
-            </span>
-          </div>
-
-          <div
-            style={{
-              backgroundColor: `${activeTheme.cardBgHex}cc`,
-              borderColor: activeTheme.cardBorderHex,
-            }}
-            className="flex items-center space-x-2 px-4 py-2.5 rounded-xl border backdrop-blur-md shadow-lg"
-          >
-            <MapPin className="w-4 h-4" style={{ color: activeTheme.accentHex }} />
-            <span style={{ color: activeTheme.secondaryTextHex }}>{weddingData.weddingLocationCity}</span>
-          </div>
-        </motion.div>
 
         {/* Live Countdown Timer Cards (Pic 1: COUNTING DOWN TO FOREVER) */}
         <motion.div
