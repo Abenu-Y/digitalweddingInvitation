@@ -66,18 +66,36 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        // If stored data was from old demo names or old wedding date, upgrade to current Hosni & Jerusalem data
-        if (parsed.groomName !== 'Hosni' || !parsed.weddingDate?.startsWith('2026-11-15')) {
+        // Only reset if obsolete 'Abebe' placeholder template was stored
+        if (parsed.groomName === 'Abebe' || parsed.brideName === 'Selamawit') {
           setWeddingData(initialWeddingData);
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(initialWeddingData));
         } else {
-          setWeddingData(parsed);
+          // Merge defaults with saved user edits so no custom setting is lost
+          setWeddingData({
+            ...initialWeddingData,
+            ...parsed,
+          });
         }
       }
     } catch (e) {
       console.error('Failed to parse wedding data from localStorage:', e);
     }
     setIsInitialized(true);
+
+    // Cross-tab real-time synchronization
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === LOCAL_STORAGE_KEY && e.newValue) {
+        try {
+          const freshData = JSON.parse(e.newValue);
+          setWeddingData((prev) => ({ ...prev, ...freshData }));
+        } catch (err) {
+          console.error('Failed to sync storage update:', err);
+        }
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Sync to local storage

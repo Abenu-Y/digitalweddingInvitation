@@ -102,6 +102,25 @@ export const ScrollLockedStoryCard: React.FC = () => {
     };
   }, [updateSlideFromScroll]);
 
+  // Timed Auto-Advance for cards (1 -> 2 -> 3) based on admin duration setting
+  useEffect(() => {
+    const durationSec = weddingData.storyCardDurationSeconds ?? 6;
+    if (durationSec <= 0) return; // 0 = manual scroll only
+
+    const timer = setInterval(() => {
+      if (!containerRef.current) return;
+      const rect = containerRef.current.getBoundingClientRect();
+      const windowH = window.innerHeight;
+      // Active when cards are currently centered in viewport
+      const isVisible = rect.top <= windowH * 0.5 && rect.bottom >= windowH * 0.5;
+      if (isVisible) {
+        setActiveSlide((prev) => (prev + 1) % slides.length);
+      }
+    }, durationSec * 1000);
+
+    return () => clearInterval(timer);
+  }, [weddingData.storyCardDurationSeconds, slides.length]);
+
   const scrollToSlide = (targetIndex: number) => {
     setActiveSlide(targetIndex);
     if (!containerRef.current) return;
@@ -128,11 +147,14 @@ export const ScrollLockedStoryCard: React.FC = () => {
     scrollToSlide(prevIndex);
   };
 
+  const scrollHeightVh = weddingData.storyCardScrollHeightVh || 260;
+
   return (
     <div
       ref={containerRef}
       id="invitation-story"
-      className="relative h-[220vh] w-full"
+      className="relative w-full"
+      style={{ height: `${scrollHeightVh}vh` }}
     >
       {/* Sticky container stays centered during scroll */}
       <div className="sticky top-0 min-h-screen w-full flex flex-col items-center justify-center z-20 px-3 sm:px-6 py-6 overflow-hidden">

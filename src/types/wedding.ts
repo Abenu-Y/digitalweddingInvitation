@@ -154,4 +154,7 @@ export interface WeddingData {
   showLoveStory?: boolean;
   showGallery?: boolean;
   autoScrollSpeed?: number;
+  adminPasscode?: string;
+  storyCardDurationSeconds?: number;
+  storyCardScrollHeightVh?: number;
 }

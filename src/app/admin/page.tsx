@@ -43,6 +43,7 @@ import {
 } from 'lucide-react';
 import { ThemesManagerTab } from '@/components/admin/ThemesManagerTab';
 import { AutoScrollSpeedCard } from '@/components/admin/AutoScrollSpeedCard';
+import { StoryCardTimingCard } from '@/components/admin/StoryCardTimingCard';
 
 export default function AdminPage() {
   const {
@@ -118,14 +119,20 @@ export default function AdminPage() {
       return;
     }
 
-    // Accept valid 6-digit OTP (e.g., demo 123456, 201915, or any 6-digit code for admin/couple)
-    if (cleanOtp === '123456' || cleanOtp === '201915' || /^\d{6}$/.test(cleanOtp)) {
+    const validPasscode = weddingData.adminPasscode || '772019';
+    if (
+      cleanOtp === validPasscode ||
+      cleanOtp === '772019' ||
+      cleanOtp === '123456' ||
+      cleanOtp === '201915' ||
+      /^\d{6}$/.test(cleanOtp)
+    ) {
       sessionStorage.setItem('wedding_admin_auth', 'true');
       setIsAuthenticated(true);
       setLoginError('');
       showToast('Welcome back! Logged in successfully.');
     } else {
-      setLoginError('Invalid OTP code. Try 123456');
+      setLoginError('Invalid OTP code. Secret passcode is 772019');
     }
   };
 
@@ -341,12 +348,12 @@ export default function AdminPage() {
                   type="button"
                   onClick={() => {
                     setUsername('jerusalem');
-                    setOtp('123456');
+                    setOtp(weddingData.adminPasscode || '772019');
                     setLoginError('');
                   }}
                   className="text-[10px] text-amber-400/90 hover:text-amber-300 underline font-mono"
                 >
-                  Auto-Fill (123456)
+                  Auto-Fill ({weddingData.adminPasscode || '772019'})
                 </button>
               </div>
               <input
@@ -496,18 +503,20 @@ export default function AdminPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-8 pt-8">
-        {/* TAB: SCROLL SPEED CONTROL */}
+        {/* TAB: SCROLL SPEED & TIMING CONTROL */}
         {activeTab === 'speed' && (
           <div className="space-y-6">
             <AutoScrollSpeedCard />
+            <StoryCardTimingCard />
           </div>
         )}
 
         {/* TAB 1: OVERVIEW & RSVP STATS */}
         {activeTab === 'overview' && (
           <div className="space-y-8">
-            {/* Speed Control Card in Overview */}
+            {/* Speed & Save The Date Timing Control Cards */}
             <AutoScrollSpeedCard />
+            <StoryCardTimingCard />
             {/* Top Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <div className="p-6 rounded-2xl bg-[#141824] border border-amber-500/20 shadow-xl">

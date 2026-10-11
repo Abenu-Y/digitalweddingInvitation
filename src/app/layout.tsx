@@ -11,6 +11,13 @@ export const metadata: Metadata = {
     description: "You are cordially invited to celebrate our wedding at Lideta Mekane Yesus. Click to view our wedding invitation.",
     type: "website",
   },
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+    ],
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg',
+  },
 };
 
 export default function RootLayout({

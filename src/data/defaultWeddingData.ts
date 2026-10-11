@@ -322,4 +322,7 @@ export const initialWeddingData: WeddingData = {
   showLoveStory: false,
   showGallery: false,
   autoScrollSpeed: 40,
+  adminPasscode: "772019",
+  storyCardDurationSeconds: 6,
+  storyCardScrollHeightVh: 260,
 };
