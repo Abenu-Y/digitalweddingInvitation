@@ -14,7 +14,7 @@ export const AutoScrollController: React.FC<AutoScrollControllerProps> = ({
   speedPixelsPerSecond = 40,
   initialActive = true,
 }) => {
-  const { weddingData } = useWedding();
+  const { weddingData, isEnvelopeOpened } = useWedding();
   const effectiveSpeed = weddingData?.autoScrollSpeed || speedPixelsPerSecond || 40;
 
   const [isActive, setIsActive] = useState<boolean>(initialActive);
@@ -48,8 +48,8 @@ export const AutoScrollController: React.FC<AutoScrollControllerProps> = ({
       const delta = (time - lastTimeRef.current) / 1000;
       lastTimeRef.current = time;
 
-      // Only scroll if active and user is NOT holding the screen
-      if (isActive && !isHolding) {
+      // Only scroll if envelope is opened, active, and user is NOT holding the screen
+      if (isEnvelopeOpened && isActive && !isHolding) {
         const scrollDistance = effectiveSpeed * delta;
         subPixelAccumulatorRef.current += scrollDistance;
 
@@ -154,6 +154,11 @@ export const AutoScrollController: React.FC<AutoScrollControllerProps> = ({
     setAtBottom(false);
     setIsActive(true);
   };
+
+  // Do not render auto-scroll toggle button if the envelope is still sealed
+  if (!isEnvelopeOpened) {
+    return null;
+  }
 
   return (
     <aside aria-label="Auto-scroll controls" className="interactive-control fixed bottom-6 right-5 sm:bottom-8 sm:right-8 z-50 flex flex-col items-end space-y-2 pointer-events-auto">
