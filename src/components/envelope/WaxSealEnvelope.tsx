@@ -230,14 +230,14 @@ export const WaxSealEnvelope: React.FC = () => {
                 animate={
                   isCardRevealed
                     ? {
-                        y: -190,
-                        scale: 1.04,
-                        opacity: 1,
-                        transition: {
-                          duration: 1.1,
-                          ease: [0.22, 1, 0.36, 1],
-                        },
-                      }
+                      y: -190,
+                      scale: 1.04,
+                      opacity: 1,
+                      transition: {
+                        duration: 1.1,
+                        ease: [0.22, 1, 0.36, 1],
+                      },
+                    }
                     : { y: 0, scale: 0.98, opacity: 0 }
                 }
                 className="absolute inset-x-4 sm:inset-x-6 top-3 h-[90%] rounded-md p-4 sm:p-6 flex flex-col items-center justify-between text-center select-none shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-20 pointer-events-none"
@@ -278,7 +278,7 @@ export const WaxSealEnvelope: React.FC = () => {
                     &amp;
                   </span>
                   <h2 className="font-script text-2xl sm:text-4xl text-[#1a382b] font-normal leading-tight">
-                    {weddingData.brideFullName || 'Jerusalem Alemayehu'}
+                    {weddingData.brideFullName || 'Eyerusalem Alemayehu'}
                   </h2>
                 </div>
 

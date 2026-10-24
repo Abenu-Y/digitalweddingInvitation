@@ -105,7 +105,7 @@ export const BoldScrollCountdown: React.FC<BoldScrollCountdownProps> = ({
           Our Special Day
         </motion.h2>
 
-        <motion.p
+        {/* <motion.p
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: false, amount: 0.3 }}
@@ -114,7 +114,7 @@ export const BoldScrollCountdown: React.FC<BoldScrollCountdownProps> = ({
           style={{ color: activeTheme.secondaryTextHex }}
         >
           Until we become one in love
-        </motion.p>
+        </motion.p> */}
 
         {/* BOLD 4-CARD GRID WITH SCROLL-IN FROM SIDES ANIMATION */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 w-full max-w-3xl mb-10">

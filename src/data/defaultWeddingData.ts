@@ -7,9 +7,9 @@ export const initialWeddingData: WeddingData = {
   groomFullNameAmharic: "ሆስኒ ሙባረክ",
   groomParents: "Mubarek Family (የአቶ ሙባረክ ቤተሰቦች)",
 
-  brideName: "Jerusalem",
+  brideName: "Eyerusalem",
   brideNameAmharic: "እየሩሳሌም",
-  brideFullName: "Jerusalem Alemayehu",
+  brideFullName: "Eyerusalem Alemayehu",
   brideFullNameAmharic: "እየሩሳሌም አለማየሁ",
   brideParents: "Alemayehu Family (የአቶ አለማየሁ ቤተሰቦች)",
 
@@ -21,14 +21,14 @@ export const initialWeddingData: WeddingData = {
   religiousQuoteAmharic: "እኔ ግን በቸርነትህ ታመንሁ፥ ልቤም በመድኃኒትህ ደስ ይለዋል።",
   quoteSource: "መዝሙረ ዳዊት 13:5 | Psalm 13:5",
 
-  globalInvitationMessage: 
+  globalInvitationMessage:
     "We would be honored to have you join us on this beautiful occasion and share in our happiness. Your presence and blessings will mean a lot to us. With love and warm regards,",
   globalInvitationMessageAmharic:
     "በዚህ ውብ እና የተቀደሰ ቀን አብረውን በመሆን ደስታችንን እንድትጋሩ በታላቅ ክብር እንጋብዝዎታለን። መገኘትዎ እና ምርቃትዎ ለእኛ ትልቅ ዋጋ አለው። በፍቅር እና በአክብሮት፣",
 
   defaultTheme: "habesha-gold",
   backgroundMusicUrl: "/G&B wedding (6).mp3",
-  backgroundMusicTitle: "Hosni & Jerusalem Royal Melody (የሰርግ ዜማ)",
+  backgroundMusicTitle: "Hosni & Eyerusalem Royal Melody (የሰርግ ዜማ)",
 
   heroImageUrl: "/images/ethiopian_wedding_couple.jpg",
   coupleAvatarUrl: "/images/ethiopian_couple_holding_hands.jpg",
@@ -92,7 +92,7 @@ export const initialWeddingData: WeddingData = {
     {
       id: "bank-1",
       bankName: "Telebirr (ቴሌብር)",
-      accountName: "Hosni Mubarek / Jerusalem Alemayehu",
+      accountName: "Hosni Mubarek / Eyerusalem Alemayehu",
       accountNumber: "0911234567",
       logoType: "telebirr",
       branch: "Addis Ababa"
@@ -100,7 +100,7 @@ export const initialWeddingData: WeddingData = {
     {
       id: "bank-2",
       bankName: "Commercial Bank of Ethiopia (CBE / ንግድ ባንክ)",
-      accountName: "Hosni Mubarek & Jerusalem Alemayehu",
+      accountName: "Hosni Mubarek & Eyerusalem Alemayehu",
       accountNumber: "1000456789123",
       logoType: "cbe",
       branch: "Finfine Branch (ፊንፊኔ ቅ/ፍ)"
@@ -116,7 +116,7 @@ export const initialWeddingData: WeddingData = {
     {
       id: "bank-4",
       bankName: "Bank of Abyssinia (አቢሲኒያ ባንክ)",
-      accountName: "Jerusalem Alemayehu",
+      accountName: "Eyerusalem Alemayehu",
       accountNumber: "45892134",
       logoType: "abyssinia",
       branch: "Mexico Branch"
