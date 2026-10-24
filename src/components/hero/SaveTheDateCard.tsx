@@ -17,7 +17,7 @@ interface SaveTheDateCardProps {
 
 export const SaveTheDateCard: React.FC<SaveTheDateCardProps> = ({
   groomFullName = 'Hosni Mubarek',
-  brideFullName = 'Jerusalem Alemayehu',
+  brideFullName = 'Eyerusalem Alemayehu',
   bibleVerseAmharic = 'እኔ ግን በቸርነትህ ታመንሁ፥ ልቤም በመድኃኒትህ ደስ ይለዋል።',
   bibleVerseSource = 'መዝሙረ ዳዊት 13:5',
   programTitleAmharic = 'የቃልኪዳን እና የአምልኮ ጊዜ',
@@ -41,7 +41,7 @@ export const SaveTheDateCard: React.FC<SaveTheDateCardProps> = ({
         <div className="absolute inset-0 z-0">
           <img
             src={bgImageUrl}
-            alt="Hosni & Jerusalem"
+            alt={`${groomFullName} & ${brideFullName}`}
             className="w-full h-full object-cover object-center filter brightness-[0.35] saturate-[0.85] transform scale-105"
           />
           {/* Dynamic Theme vignette gradients */}

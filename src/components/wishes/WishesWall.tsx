@@ -40,7 +40,7 @@ export const WishesWall: React.FC = () => {
           </h2>
           <p className="text-xs sm:text-sm text-stone-400 mt-2 max-w-lg mx-auto">
             {language === 'am'
-              ? 'ለአበበ እና ሰላማዊት የልብዎን መልካም ምኞትና ጸሎት ያጋሩ'
+              ? `ለ${weddingData.groomNameAmharic || 'ሆስኒ'} እና ${weddingData.brideNameAmharic || 'እየሩሳሌም'} የልብዎን መልካም ምኞትና ጸሎት ያጋሩ`
               : 'Leave a warm blessing, memory, or congratulatory note for the bride & groom.'}
           </p>
         </div>

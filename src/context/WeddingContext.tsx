@@ -39,15 +39,38 @@ interface WeddingContextType {
   
   // Wishes Wall
   addWish: (guestName: string, message: string) => void;
+  updateWish: (id: string, updates: Partial<WishMessage>) => void;
   likeWish: (wishId: string) => void;
   toggleApproveWish: (wishId: string) => void;
   deleteWish: (wishId: string) => void;
   
-  // Reset
+  // Database Status
+  mongoStatus: { connected: boolean; latencyMs: number; database: string; error?: string } | null;
+
+  // Reset & Code Synchronization
   resetToDefault: () => void;
+  forceSyncCodeDefaults: () => void;
 }
 
-const LOCAL_STORAGE_KEY = 'yene_serg_wedding_data_v1';
+const LOCAL_STORAGE_KEY = 'yene_serg_wedding_data_v2';
+const LEGACY_STORAGE_KEY = 'yene_serg_wedding_data_v1';
+
+// Helper to compute a signature of the current code defaults
+export const computeWeddingDataSignature = (data: WeddingData): string => {
+  return [
+    data.dataVersion ?? 2,
+    data.groomName,
+    data.brideName,
+    data.groomFullName,
+    data.brideFullName,
+    data.weddingDate,
+    data.weddingLocationCity,
+    data.backgroundMusicTitle,
+    data.storyCardDurationSeconds,
+    data.storyCardTransitionDuration,
+    data.bankAccounts?.map((b) => `${b.id}:${b.accountName}:${b.accountNumber}`).join('|'),
+  ].join(':::');
+};
 
 const WeddingContext = createContext<WeddingContextType | undefined>(undefined);
 
@@ -59,49 +82,128 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [isEnvelopeOpened, setIsEnvelopeOpened] = useState<boolean>(false);
   const [isPlayingMusic, setIsPlayingMusic] = useState<boolean>(false);
   const [isInitialized, setIsInitialized] = useState<boolean>(false);
+  const [mongoStatus, setMongoStatus] = useState<{
+    connected: boolean;
+    latencyMs: number;
+    database: string;
+    error?: string;
+  } | null>(null);
 
-  // Load from local storage with migration
+  // Background SWR fetch from MongoDB (Status & Wishes)
+  useEffect(() => {
+    // 1. Live status check
+    fetch('/api/status')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.status) {
+          setMongoStatus(data.status);
+        }
+      })
+      .catch((err) => {
+        console.warn('MongoDB status check fallback:', err);
+      });
+
+    // 2. Fetch fresh wishes in background
+    fetch('/api/wishes')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && Array.isArray(data.wishes) && data.wishes.length > 0) {
+          setWeddingData((prev) => {
+            const updated = {
+              ...prev,
+              wishes: data.wishes,
+            };
+            try {
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+            } catch (e) {}
+            return updated;
+          });
+        }
+      })
+      .catch((err) => {
+        console.warn('Wishes SWR fetch fallback to local cache:', err);
+      });
+  }, []);
+
+  // Load from local storage with automated code update detection & migration
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
+      const currentSignature = computeWeddingDataSignature(initialWeddingData);
+      
+      // Check if URL has ?reset=true or ?refresh=1 to forcefully reload fresh code
+      const isResetRequested =
+        typeof window !== 'undefined' &&
+        (window.location.search.includes('reset=true') ||
+          window.location.search.includes('refresh=1') ||
+          window.location.search.includes('clear=1'));
+
+      if (isResetRequested) {
+        localStorage.removeItem(LOCAL_STORAGE_KEY);
+        localStorage.removeItem(LEGACY_STORAGE_KEY);
+        const freshData: WeddingData = {
+          ...initialWeddingData,
+          _contentSignature: currentSignature,
+          dataVersion: initialWeddingData.dataVersion ?? 2,
+        };
+        setWeddingData(freshData);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(freshData));
+        setIsInitialized(true);
+        return;
+      }
+
+      // Check current v2 storage, or fallback to legacy v1 storage
+      const stored = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
+
       if (stored) {
         const parsed = JSON.parse(stored);
-        // Only reset if obsolete 'Abebe' placeholder template was stored
-        if (parsed.groomName === 'Abebe' || parsed.brideName === 'Selamawit') {
-          setWeddingData(initialWeddingData);
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(initialWeddingData));
+
+        // Check if code defaults were updated, or legacy placeholder name was stored
+        const isCodeUpdated =
+          !parsed._contentSignature ||
+          parsed._contentSignature !== currentSignature ||
+          (parsed.dataVersion ?? 1) < (initialWeddingData.dataVersion ?? 2) ||
+          parsed.brideName === 'Jerusalem' ||
+          parsed.groomName === 'Abebe';
+
+        if (isCodeUpdated) {
+          // Code has new updates (e.g. brideName changed to 'Eyerusalem', updated bank accounts, durations)
+          // Intelligently sync updated code fields over parsed data while preserving custom user guests & wishes
+          const syncedData: WeddingData = {
+            ...parsed,
+            ...initialWeddingData, // Guarantees latest code changes take effect immediately!
+            // Preserve dynamic user-added data
+            guests: parsed.guests && parsed.guests.length > 0 ? parsed.guests : initialWeddingData.guests,
+            wishes: parsed.wishes && parsed.wishes.length > 0 ? parsed.wishes : initialWeddingData.wishes,
+            adminPasscode: parsed.adminPasscode || initialWeddingData.adminPasscode,
+            defaultTheme: parsed.defaultTheme || initialWeddingData.defaultTheme,
+            _contentSignature: currentSignature,
+            dataVersion: initialWeddingData.dataVersion ?? 2,
+          };
+
+          setWeddingData(syncedData);
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(syncedData));
+          localStorage.removeItem(LEGACY_STORAGE_KEY);
         } else {
-          // Merge defaults with saved user edits so no custom setting is lost
-          const defaultTheme = parsed.defaultTheme === 'emerald-velvet' ? 'habesha-gold' : (parsed.defaultTheme || 'habesha-gold');
-          const backgroundMusicUrl = (!parsed.backgroundMusicUrl || parsed.backgroundMusicUrl.includes('mixkit'))
-            ? '/G&B wedding (6).mp3'
-            : parsed.backgroundMusicUrl;
-          const backgroundMusicTitle = (!parsed.backgroundMusicTitle || parsed.backgroundMusicTitle.includes('Piano'))
-            ? 'Hosni & Jerusalem Royal Melody (የሰርግ ዜማ)'
-            : parsed.backgroundMusicTitle;
-
-          const storyCardDurationSeconds = (!parsed.storyCardDurationSeconds || parsed.storyCardDurationSeconds === 6)
-            ? 12
-            : parsed.storyCardDurationSeconds;
-          const storyCardTransitionDuration = parsed.storyCardTransitionDuration ?? 0.75;
-          const storyCardAutoAdvance = parsed.storyCardAutoAdvance ?? true;
-          const storyCardPauseOnHover = parsed.storyCardPauseOnHover ?? true;
-
+          // Data is already up-to-date with code
           setWeddingData({
             ...initialWeddingData,
             ...parsed,
-            defaultTheme,
-            backgroundMusicUrl,
-            backgroundMusicTitle,
-            storyCardDurationSeconds,
-            storyCardTransitionDuration,
-            storyCardAutoAdvance,
-            storyCardPauseOnHover,
+            _contentSignature: currentSignature,
           });
         }
+      } else {
+        // First visit: save initial wedding data with current signature
+        const freshData: WeddingData = {
+          ...initialWeddingData,
+          _contentSignature: currentSignature,
+          dataVersion: initialWeddingData.dataVersion ?? 2,
+        };
+        setWeddingData(freshData);
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(freshData));
       }
     } catch (e) {
       console.error('Failed to parse wedding data from localStorage:', e);
+      setWeddingData(initialWeddingData);
     }
     setIsInitialized(true);
 
@@ -234,31 +336,97 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const addWish = (guestName: string, message: string) => {
     const newWish: WishMessage = {
-      id: `wish-${Date.now()}`,
-      guestName: guestName.trim() || 'Well-wisher (እንግዳ)',
+      id: `w-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      guestName: guestName.trim() || 'Well-wisher (የክብር እንግዳ)',
       message: message.trim(),
       createdAt: new Date().toISOString(),
       likes: 0,
       approved: true, // Auto-approved by default
     };
+
+    // 1. Instant optimistic local update (0ms UI latency!)
     setWeddingData((prev) => ({
       ...prev,
       wishes: [newWish, ...prev.wishes],
     }));
+
+    // 2. Background sync to MongoDB API
+    fetch('/api/wishes', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newWish),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.wish?.id) {
+          setWeddingData((prev) => ({
+            ...prev,
+            wishes: prev.wishes.map((w) => (w.id === newWish.id ? data.wish : w)),
+          }));
+        }
+      })
+      .catch((err) => {
+        console.warn('Wishes background POST fallback to local cache:', err);
+      });
+  };
+
+  const updateWish = (id: string, updates: Partial<WishMessage>) => {
+    // 1. Instant optimistic local update
+    setWeddingData((prev) => ({
+      ...prev,
+      wishes: prev.wishes.map((w) => (w.id === id ? { ...w, ...updates } : w)),
+    }));
+
+    // 2. Background sync to MongoDB
+    fetch('/api/wishes', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, ...updates }),
+    }).catch((err) => {
+      console.warn('Wishes update fallback to local cache:', err);
+    });
   };
 
   const likeWish = (wishId: string) => {
-    setWeddingData((prev) => ({
-      ...prev,
-      wishes: prev.wishes.map((w) => (w.id === wishId ? { ...w, likes: w.likes + 1 } : w)),
-    }));
+    let nextLikes = 1;
+    setWeddingData((prev) => {
+      const updated = prev.wishes.map((w) => {
+        if (w.id === wishId) {
+          nextLikes = w.likes + 1;
+          return { ...w, likes: nextLikes };
+        }
+        return w;
+      });
+      return { ...prev, wishes: updated };
+    });
+
+    fetch('/api/wishes', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: wishId, likes: nextLikes }),
+    }).catch(() => {});
   };
 
   const toggleApproveWish = (wishId: string) => {
-    setWeddingData((prev) => ({
-      ...prev,
-      wishes: prev.wishes.map((w) => (w.id === wishId ? { ...w, approved: !w.approved } : w)),
-    }));
+    let newApprovedState = true;
+    setWeddingData((prev) => {
+      const updated = prev.wishes.map((w) => {
+        if (w.id === wishId) {
+          newApprovedState = !w.approved;
+          return { ...w, approved: newApprovedState };
+        }
+        return w;
+      });
+      return { ...prev, wishes: updated };
+    });
+
+    fetch('/api/wishes', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: wishId, approved: newApprovedState }),
+    }).catch((err) => {
+      console.warn('Wishes toggleApprove fallback to local cache:', err);
+    });
   };
 
   const deleteWish = (wishId: string) => {
@@ -266,11 +434,31 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       ...prev,
       wishes: prev.wishes.filter((w) => w.id !== wishId),
     }));
+
+    fetch(`/api/wishes?id=${encodeURIComponent(wishId)}`, {
+      method: 'DELETE',
+    }).catch((err) => {
+      console.warn('Wishes delete fallback to local cache:', err);
+    });
   };
 
   const resetToDefault = () => {
-    setWeddingData(initialWeddingData);
     localStorage.removeItem(LOCAL_STORAGE_KEY);
+    localStorage.removeItem(LEGACY_STORAGE_KEY);
+    const fresh = {
+      ...initialWeddingData,
+      _contentSignature: computeWeddingDataSignature(initialWeddingData),
+      dataVersion: initialWeddingData.dataVersion ?? 2,
+    };
+    setWeddingData(fresh);
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(fresh));
+  };
+
+  const forceSyncCodeDefaults = () => {
+    resetToDefault();
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
   };
 
   return (
@@ -298,10 +486,13 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         deleteGuest,
         submitGuestRsvp,
         addWish,
+        updateWish,
         likeWish,
         toggleApproveWish,
         deleteWish,
+        mongoStatus,
         resetToDefault,
+        forceSyncCodeDefaults,
       }}
     >
       {children}

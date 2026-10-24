@@ -328,4 +328,5 @@ export const initialWeddingData: WeddingData = {
   storyCardTransitionDuration: 0.75,
   storyCardAutoAdvance: true,
   storyCardPauseOnHover: true,
+  dataVersion: 2,
 };

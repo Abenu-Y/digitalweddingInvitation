@@ -176,7 +176,7 @@ export const ThemesManagerTab: React.FC = () => {
         <div className="mb-4">
           <h3 className="text-lg font-cinzel font-bold text-amber-200 flex items-center gap-2">
             <Palette className="w-5 h-5 text-amber-400" />
-            Available Themes for Hosni & Jerusalem
+            Available Themes for {weddingData.groomName} &amp; {weddingData.brideName}
           </h3>
           <p className="text-xs text-stone-400">
             Click &ldquo;Set as Default&rdquo; to make a theme the default for everyone, or click &ldquo;Copy Link&rdquo; to send a specific theme to certain guests.

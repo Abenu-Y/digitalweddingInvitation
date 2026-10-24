@@ -65,7 +65,7 @@ export const RsvpSection: React.FC = () => {
           <p className="text-xs sm:text-sm text-stone-400 mt-2 max-w-md mx-auto">
             {language === 'am'
               ? 'እባክዎ በሰርጋችን ላይ መገኘትዎን አስቀድመው በማረጋገጥ እንድንዘጋጅ ይርዱን'
-              : 'Kindly confirm your presence with joy to celebrate Hosni & Jerusalem’s holy union.'}
+              : `Kindly confirm your presence with joy to celebrate ${weddingData.groomName} & ${weddingData.brideName}’s holy union.`}
           </p>
         </div>
 

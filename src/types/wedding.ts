@@ -160,4 +160,6 @@ export interface WeddingData {
   storyCardTransitionDuration?: number;
   storyCardAutoAdvance?: boolean;
   storyCardPauseOnHover?: boolean;
+  dataVersion?: number;
+  _contentSignature?: string;
 }

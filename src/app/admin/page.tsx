@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useWedding } from '@/context/WeddingContext';
-import { Guest, ThemeId, EventType, ScheduleItem, VenueItem, BankAccount } from '@/types/wedding';
+import { Guest, ThemeId, EventType, ScheduleItem, VenueItem, BankAccount, WishMessage } from '@/types/wedding';
 import { THEME_CONFIGS } from '@/styles/themes';
 import {
   Users,
@@ -21,6 +21,8 @@ import {
   ExternalLink,
   ChevronRight,
   Eye,
+  EyeOff,
+  Heart,
   Crown,
   Share2,
   RefreshCw,
@@ -38,6 +40,7 @@ import {
   Unlock,
   Gauge,
   Key,
+  Database,
   AlertCircle,
   AlertTriangle,
   Menu,
@@ -59,9 +62,13 @@ export default function AdminPage() {
     addGuest,
     updateGuest,
     deleteGuest,
+    addWish,
+    updateWish,
     toggleApproveWish,
     deleteWish,
+    mongoStatus,
     resetToDefault,
+    forceSyncCodeDefaults,
   } = useWedding();
 
   // Authentication State: Username and 6-Digit OTP
@@ -70,6 +77,15 @@ export default function AdminPage() {
   const [otp, setOtp] = useState<string>('');
   const [loginError, setLoginError] = useState<string>('');
   const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
+  const [isLoggingIn, setIsLoggingIn] = useState<boolean>(false);
+
+  // Wishes Moderation State (MongoDB / Local Cache)
+  const [wishesFilter, setWishesFilter] = useState<'all' | 'approved' | 'hidden'>('all');
+  const [wishesSearch, setWishesSearch] = useState<string>('');
+  const [editingWish, setEditingWish] = useState<WishMessage | null>(null);
+  const [isAddWishModalOpen, setIsAddWishModalOpen] = useState<boolean>(false);
+  const [newWishName, setNewWishName] = useState<string>('');
+  const [newWishMessage, setNewWishMessage] = useState<string>('');
 
   // Admin Language State (Defaults to English as requested)
   const [adminLang, setAdminLang] = useState<'en' | 'am'>('en');
@@ -111,7 +127,7 @@ export default function AdminPage() {
     }
   }, []);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanUser = username.trim().toLowerCase();
     const cleanOtp = otp.trim().replace(/\s/g, '');
@@ -126,6 +142,37 @@ export default function AdminPage() {
       return;
     }
 
+    setIsLoggingIn(true);
+    setLoginError('');
+
+    try {
+      // 1. Authenticate with MongoDB API
+      const res = await fetch('/api/admin/auth', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: cleanUser, otp: cleanOtp }),
+      });
+      const data = await res.json();
+
+      if (res.ok && data?.success) {
+        sessionStorage.setItem('wedding_admin_auth', 'true');
+        setIsAuthenticated(true);
+        setLoginError('');
+        showToast(
+          `Welcome! Logged in via ${
+            data.user?.authSource === 'mongodb' ? 'MongoDB Cloud' : 'Local Fallback'
+          }.`
+        );
+        setIsLoggingIn(false);
+        return;
+      }
+    } catch (err) {
+      console.warn('MongoDB auth network error, attempting local fallback:', err);
+    }
+
+    setIsLoggingIn(false);
+
+    // 2. Resilient local fallback if MongoDB is offline or not yet configured
     const validPasscode = weddingData.adminPasscode || '772019';
     if (
       cleanOtp === validPasscode ||
@@ -137,7 +184,7 @@ export default function AdminPage() {
       sessionStorage.setItem('wedding_admin_auth', 'true');
       setIsAuthenticated(true);
       setLoginError('');
-      showToast('Welcome back! Logged in successfully.');
+      showToast('Welcome back! Logged in successfully via local verification.');
     } else {
       setLoginError('Invalid OTP code. Secret passcode is 772019');
     }
@@ -406,10 +453,15 @@ export default function AdminPage() {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-stone-950 font-bold text-sm shadow-[0_0_20px_rgba(212,175,55,0.35)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-all flex items-center justify-center space-x-2 cursor-pointer mt-2"
+              disabled={isLoggingIn}
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-600 via-amber-500 to-amber-600 text-stone-950 font-bold text-sm shadow-[0_0_20px_rgba(212,175,55,0.35)] hover:shadow-[0_0_30px_rgba(212,175,55,0.5)] transition-all flex items-center justify-center space-x-2 cursor-pointer mt-2 disabled:opacity-75"
             >
-              <Lock className="w-4 h-4" />
-              <span>Verify & Enter</span>
+              {isLoggingIn ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Lock className="w-4 h-4" />
+              )}
+              <span>{isLoggingIn ? 'Verifying...' : 'Verify & Enter'}</span>
             </button>
 
             <div className="pt-4 border-t border-white/5">
@@ -532,6 +584,28 @@ export default function AdminPage() {
             <Eye className="w-3.5 h-3.5 text-amber-400" />
             <span className="hidden sm:inline">View Public Site</span>
           </Link>
+          <button
+            onClick={() => {
+              setConfirmModal({
+                isOpen: true,
+                title: 'Sync Latest Code Data?',
+                message: 'This will purge cached browser data and re-sync all latest couple names, bank accounts, dates, and settings from the codebase. Any custom guest list or wishes will be preserved.',
+                confirmLabel: 'Yes, Sync Latest Code',
+                cancelLabel: 'Cancel',
+                isDestructive: false,
+                onConfirm: () => {
+                  forceSyncCodeDefaults();
+                  setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                  showToast('Synchronized with latest code defaults!');
+                },
+              });
+            }}
+            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-amber-500/20 border border-amber-500/40 text-amber-200 text-xs font-semibold hover:bg-amber-500/30 transition-all shadow-sm"
+            title="Reload latest names & details from code"
+          >
+            <RefreshCw className="w-3.5 h-3.5 text-amber-300" />
+            <span className="hidden sm:inline">Sync Latest Code</span>
+          </button>
           <button
             onClick={handleLogout}
             className="p-2 rounded-xl bg-stone-900 border border-stone-700 text-stone-400 hover:text-amber-300 transition-colors"
@@ -1747,50 +1821,299 @@ export default function AdminPage() {
 
         {/* TAB 8: WISHES MODERATION */}
         {activeTab === 'wishes' && (
-          <div className="max-w-4xl space-y-4">
-            <h3 className="text-base font-cinzel font-bold text-amber-200">
-              Guestbook Blessings ({weddingData.wishes.length})
-            </h3>
+          <div className="max-w-4xl space-y-6">
+            {/* Header with Title and Live MongoDB Status */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-xl font-cinzel font-bold text-amber-200 flex items-center gap-2.5">
+                  <MessageSquare className="w-5 h-5 text-amber-400" />
+                  <span>Guestbook Blessings ({weddingData.wishes.length})</span>
+                </h3>
+                <p className="text-xs text-stone-400 mt-1">
+                  Manage, edit, hide, and approve heartfelt blessings and congratulations from wedding guests.
+                </p>
+              </div>
 
-            <div className="space-y-3">
-              {weddingData.wishes.map((wish) => (
+              <button
+                type="button"
+                onClick={() => {
+                  setNewWishName('');
+                  setNewWishMessage('');
+                  setIsAddWishModalOpen(true);
+                }}
+                className="inline-flex items-center space-x-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 text-xs font-bold shadow-lg hover:shadow-amber-500/25 transition-all self-start sm:self-auto cursor-pointer"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add Blessing</span>
+              </button>
+            </div>
+
+            {/* Live MongoDB Status & Performance Indicator Card */}
+            <div className="p-4 rounded-2xl bg-[#141824] border border-amber-500/30 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="flex items-center space-x-3">
                 <div
-                  key={wish.id}
-                  className="p-4 rounded-2xl bg-[#141824] border border-white/10 flex items-start justify-between gap-4"
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${
+                    mongoStatus?.connected
+                      ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                      : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                  }`}
                 >
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h4 className="text-xs font-bold text-amber-300">{wish.guestName}</h4>
-                      <span className="text-[10px] text-stone-500">
-                        {new Date(wish.createdAt).toLocaleString()}
-                      </span>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-300">
-                        ❤️ {wish.likes} likes
-                      </span>
-                    </div>
-                    <p className="text-xs text-stone-200 mt-1">{wish.message}</p>
-                  </div>
-
-                  <div className="flex items-center space-x-2 shrink-0">
-                    <button
-                      onClick={() => toggleApproveWish(wish.id)}
-                      className={`px-3 py-1 rounded-lg text-xs font-semibold ${
-                        wish.approved
-                          ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-                          : 'bg-stone-800 text-stone-400'
-                      }`}
-                    >
-                      {wish.approved ? 'Approved' : 'Hidden'}
-                    </button>
-                    <button
-                      onClick={() => deleteWish(wish.id)}
-                      className="p-1.5 rounded-lg bg-stone-900 text-stone-500 hover:text-rose-400"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
+                  <Database className="w-4 h-4" />
                 </div>
-              ))}
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        mongoStatus?.connected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'
+                      }`}
+                    />
+                    <h4 className="text-xs font-bold text-white">
+                      {mongoStatus?.connected ? 'MongoDB Cloud Synced' : 'Resilient Fallback Mode (Local Storage)'}
+                    </h4>
+                  </div>
+                  <p className="text-[11px] text-stone-400 mt-0.5">
+                    {mongoStatus?.connected
+                      ? `Database: ${mongoStatus.database || 'wedding_db'} • Response Latency: ${mongoStatus.latencyMs}ms • Background Indexing Active`
+                      : 'Instant 0ms cached data active. Updates are preserved and will automatically synchronize when database connects.'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="shrink-0 flex items-center space-x-2">
+                <span
+                  className={`text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full border ${
+                    mongoStatus?.connected
+                      ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                      : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                  }`}
+                >
+                  {mongoStatus?.connected ? '🟢 High Performance' : '🟡 Zero Lag Cache'}
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Stats Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="p-3.5 rounded-xl bg-black/40 border border-white/5">
+                <span className="text-[10px] uppercase font-semibold text-stone-400">Total Wishes</span>
+                <p className="text-xl font-bold font-mono text-amber-200 mt-0.5">{weddingData.wishes.length}</p>
+              </div>
+              <div className="p-3.5 rounded-xl bg-black/40 border border-white/5">
+                <span className="text-[10px] uppercase font-semibold text-emerald-400">Approved (Public)</span>
+                <p className="text-xl font-bold font-mono text-emerald-300 mt-0.5">
+                  {weddingData.wishes.filter((w) => w.approved).length}
+                </p>
+              </div>
+              <div className="p-3.5 rounded-xl bg-black/40 border border-white/5">
+                <span className="text-[10px] uppercase font-semibold text-amber-400">Hidden / Moderated</span>
+                <p className="text-xl font-bold font-mono text-amber-300 mt-0.5">
+                  {weddingData.wishes.filter((w) => !w.approved).length}
+                </p>
+              </div>
+              <div className="p-3.5 rounded-xl bg-black/40 border border-white/5">
+                <span className="text-[10px] uppercase font-semibold text-rose-400">Total Hearts ❤️</span>
+                <p className="text-xl font-bold font-mono text-rose-300 mt-0.5">
+                  {weddingData.wishes.reduce((acc, w) => acc + (w.likes || 0), 0)}
+                </p>
+              </div>
+            </div>
+
+            {/* Search & Filter Toolbar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2">
+              {/* Filter Tabs */}
+              <div className="flex items-center space-x-1.5 p-1 rounded-xl bg-black/50 border border-white/10 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setWishesFilter('all')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                    wishesFilter === 'all'
+                      ? 'bg-amber-500 text-stone-950 shadow-sm'
+                      : 'text-stone-400 hover:text-white'
+                  }`}
+                >
+                  All ({weddingData.wishes.length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWishesFilter('approved')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                    wishesFilter === 'approved'
+                      ? 'bg-emerald-500 text-stone-950 shadow-sm'
+                      : 'text-stone-400 hover:text-white'
+                  }`}
+                >
+                  Approved ({weddingData.wishes.filter((w) => w.approved).length})
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setWishesFilter('hidden')}
+                  className={`px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
+                    wishesFilter === 'hidden'
+                      ? 'bg-amber-400 text-stone-950 shadow-sm'
+                      : 'text-stone-400 hover:text-white'
+                  }`}
+                >
+                  Hidden ({weddingData.wishes.filter((w) => !w.approved).length})
+                </button>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative flex-1 sm:max-w-xs">
+                <Search className="w-3.5 h-3.5 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  value={wishesSearch}
+                  onChange={(e) => setWishesSearch(e.target.value)}
+                  placeholder="Search wishes or guests..."
+                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-black/60 border border-white/10 text-xs text-white placeholder:text-stone-600 focus:outline-none focus:border-amber-400"
+                />
+              </div>
+            </div>
+
+            {/* Wishes List */}
+            <div className="space-y-3 pt-1">
+              {weddingData.wishes
+                .filter((w) => {
+                  const matchesFilter =
+                    wishesFilter === 'all' ||
+                    (wishesFilter === 'approved' && w.approved) ||
+                    (wishesFilter === 'hidden' && !w.approved);
+                  const matchesSearch =
+                    !wishesSearch.trim() ||
+                    w.guestName.toLowerCase().includes(wishesSearch.toLowerCase()) ||
+                    w.message.toLowerCase().includes(wishesSearch.toLowerCase());
+                  return matchesFilter && matchesSearch;
+                })
+                .map((wish) => (
+                  <div
+                    key={wish.id}
+                    className="p-4 sm:p-5 rounded-2xl bg-[#141824] border border-white/10 hover:border-amber-500/30 transition-all flex flex-col sm:flex-row sm:items-start justify-between gap-4"
+                  >
+                    <div className="space-y-2 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-tr from-amber-500/20 to-amber-400/10 border border-amber-500/40 text-amber-300 flex items-center justify-center text-[10px] font-bold">
+                          {wish.guestName.charAt(0).toUpperCase()}
+                        </div>
+                        <h4 className="text-xs font-bold text-amber-300 font-cinzel">{wish.guestName}</h4>
+                        <span className="text-[10px] text-stone-500 font-mono">
+                          {new Date(wish.createdAt).toLocaleDateString(undefined, {
+                            month: 'short',
+                            day: 'numeric',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </span>
+                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-rose-500/10 border border-rose-500/20 text-rose-300 font-semibold flex items-center gap-1">
+                          <Heart className="w-2.5 h-2.5 fill-rose-400 text-rose-400" />
+                          <span>{wish.likes}</span>
+                        </span>
+                        <span
+                          className={`text-[10px] px-2 py-0.5 rounded-full font-semibold border ${
+                            wish.approved
+                              ? 'bg-emerald-500/10 text-emerald-300 border-emerald-500/30'
+                              : 'bg-amber-500/10 text-amber-300 border-amber-500/30'
+                          }`}
+                        >
+                          {wish.approved ? 'Public' : 'Hidden'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-stone-200 leading-relaxed font-amharic bg-black/30 p-3 rounded-xl border border-white/5">
+                        "{wish.message}"
+                      </p>
+                    </div>
+
+                    <div className="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+                      {/* Edit Button */}
+                      <button
+                        type="button"
+                        onClick={() => setEditingWish(wish)}
+                        className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-stone-900 border border-amber-500/30 text-amber-200 text-xs font-semibold hover:bg-amber-500/20 transition-all cursor-pointer"
+                        title="Edit Guest Name or Message"
+                      >
+                        <Edit3 className="w-3.5 h-3.5 text-amber-400" />
+                        <span>Edit</span>
+                      </button>
+
+                      {/* Hide / Approve Toggle */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          toggleApproveWish(wish.id);
+                          showToast(wish.approved ? 'Wish hidden from public site' : 'Wish approved and published!');
+                        }}
+                        className={`flex items-center space-x-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                          wish.approved
+                            ? 'bg-amber-500/10 text-amber-300 border-amber-500/30 hover:bg-amber-500/20'
+                            : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30'
+                        }`}
+                        title={wish.approved ? 'Hide from public site' : 'Approve for public site'}
+                      >
+                        {wish.approved ? (
+                          <>
+                            <EyeOff className="w-3.5 h-3.5" />
+                            <span>Hide</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye className="w-3.5 h-3.5" />
+                            <span>Approve</span>
+                          </>
+                        )}
+                      </button>
+
+                      {/* Delete Button */}
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setConfirmModal({
+                            isOpen: true,
+                            title: 'Delete Wedding Wish?',
+                            message: `Are you sure you want to permanently delete the blessing from "${wish.guestName}"? This will delete it from MongoDB and local storage.`,
+                            confirmLabel: 'Delete Wish',
+                            cancelLabel: 'Cancel',
+                            isDestructive: true,
+                            onConfirm: () => {
+                              deleteWish(wish.id);
+                              setConfirmModal((prev) => ({ ...prev, isOpen: false }));
+                              showToast('Wish deleted successfully.');
+                            },
+                          });
+                        }}
+                        className="p-2 rounded-xl bg-stone-900 border border-white/5 text-stone-500 hover:text-rose-400 hover:border-rose-500/30 transition-all cursor-pointer"
+                        title="Delete Wish Permanently"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+              {weddingData.wishes.filter((w) => {
+                const matchesFilter =
+                  wishesFilter === 'all' ||
+                  (wishesFilter === 'approved' && w.approved) ||
+                  (wishesFilter === 'hidden' && !w.approved);
+                const matchesSearch =
+                  !wishesSearch.trim() ||
+                  w.guestName.toLowerCase().includes(wishesSearch.toLowerCase()) ||
+                  w.message.toLowerCase().includes(wishesSearch.toLowerCase());
+                return matchesFilter && matchesSearch;
+              }).length === 0 && (
+                <div className="p-8 rounded-2xl bg-black/30 border border-white/5 text-center space-y-2">
+                  <MessageSquare className="w-8 h-8 text-stone-600 mx-auto" />
+                  <p className="text-xs text-stone-400">No wedding wishes found matching your filter.</p>
+                  {wishesSearch && (
+                    <button
+                      type="button"
+                      onClick={() => setWishesSearch('')}
+                      className="text-xs text-amber-400 hover:underline font-semibold"
+                    >
+                      Clear Search Query
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -2054,6 +2377,209 @@ export default function AdminPage() {
                   className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 text-xs font-bold shadow-lg hover:shadow-amber-500/30 transition-all"
                 >
                   {editingGuestId ? 'Save Changes' : 'Create Invitation Card'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* EDIT WISH MODAL */}
+      {editingWish && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-[#141824] border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl my-8 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <h2 className="text-lg font-cinzel font-bold text-amber-200 flex items-center gap-2">
+                <Edit3 className="w-5 h-5 text-amber-400" />
+                <span>Edit Guest Blessing</span>
+              </h2>
+              <button
+                type="button"
+                onClick={() => setEditingWish(null)}
+                className="text-stone-400 hover:text-white text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                updateWish(editingWish.id, {
+                  guestName: editingWish.guestName,
+                  message: editingWish.message,
+                  approved: editingWish.approved,
+                  likes: editingWish.likes,
+                });
+                setEditingWish(null);
+                showToast('Wish updated and synced with database!');
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-stone-300 font-semibold mb-1">
+                  Guest / Well-Wisher Name:
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingWish.guestName}
+                  onChange={(e) => setEditingWish({ ...editingWish, guestName: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-xs text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-stone-300 font-semibold mb-1">
+                  Heartfelt Message / Blessing:
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  value={editingWish.message}
+                  onChange={(e) => setEditingWish({ ...editingWish, message: e.target.value })}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-xs text-white font-amharic focus:outline-none focus:border-amber-400 resize-none leading-relaxed"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-1">
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-stone-300 font-semibold mb-1">
+                    Likes / Hearts:
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={editingWish.likes}
+                    onChange={(e) =>
+                      setEditingWish({
+                        ...editingWish,
+                        likes: Math.max(0, parseInt(e.target.value) || 0),
+                      })
+                    }
+                    className="w-full px-3.5 py-2 rounded-xl bg-black/50 border border-white/10 text-xs text-white focus:outline-none focus:border-amber-400"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs uppercase tracking-wider text-stone-300 font-semibold mb-1">
+                    Public Visibility:
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setEditingWish({ ...editingWish, approved: !editingWish.approved })}
+                    className={`w-full py-2 px-3 rounded-xl text-xs font-semibold border flex items-center justify-center space-x-2 transition-all cursor-pointer ${
+                      editingWish.approved
+                        ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                        : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
+                    }`}
+                  >
+                    {editingWish.approved ? (
+                      <>
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Public (Approved)</span>
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="w-3.5 h-3.5" />
+                        <span>Hidden (Private)</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-white/10 flex items-center justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setEditingWish(null)}
+                  className="px-5 py-2.5 rounded-xl bg-stone-900 border border-white/10 text-stone-300 text-xs font-semibold hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 text-xs font-bold shadow-lg hover:shadow-amber-500/30 transition-all cursor-pointer"
+                >
+                  Save Changes
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ADD WISH / BLESSING MODAL */}
+      {isAddWishModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-[#141824] border border-amber-500/40 rounded-3xl p-6 sm:p-8 shadow-2xl my-8 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+            <div className="flex items-center justify-between pb-4 border-b border-white/10">
+              <h2 className="text-lg font-cinzel font-bold text-amber-200 flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-amber-400" />
+                <span>Add New Guestbook Blessing</span>
+              </h2>
+              <button
+                type="button"
+                onClick={() => setIsAddWishModalOpen(false)}
+                className="text-stone-400 hover:text-white text-sm cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!newWishMessage.trim()) return;
+                addWish(newWishName.trim() || 'Well-wisher (የክብር እንግዳ)', newWishMessage.trim());
+                setIsAddWishModalOpen(false);
+                setNewWishName('');
+                setNewWishMessage('');
+                showToast('Blessing added and queued to cloud database!');
+              }}
+              className="space-y-4"
+            >
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-stone-300 font-semibold mb-1">
+                  Guest / Elder Name:
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. አባ ገብረማርያም & እማሆይ ሰላም"
+                  value={newWishName}
+                  onChange={(e) => setNewWishName(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-xs text-white focus:outline-none focus:border-amber-400"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs uppercase tracking-wider text-stone-300 font-semibold mb-1">
+                  Heartfelt Blessing Message:
+                </label>
+                <textarea
+                  rows={4}
+                  required
+                  placeholder="እግዚአብሔር ጋብቻችሁን ይባርክ! የፍቅር፣ የሰላም እና የበረከት ዘመን ይሁንላችሁ..."
+                  value={newWishMessage}
+                  onChange={(e) => setNewWishMessage(e.target.value)}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/10 text-xs text-white font-amharic focus:outline-none focus:border-amber-400 resize-none leading-relaxed"
+                />
+              </div>
+
+              <div className="pt-4 border-t border-white/10 flex items-center justify-end space-x-3">
+                <button
+                  type="button"
+                  onClick={() => setIsAddWishModalOpen(false)}
+                  className="px-5 py-2.5 rounded-xl bg-stone-900 border border-white/10 text-stone-300 text-xs font-semibold hover:bg-white/5 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-stone-950 text-xs font-bold shadow-lg hover:shadow-amber-500/30 transition-all cursor-pointer"
+                >
+                  Publish Blessing
                 </button>
               </div>
             </form>

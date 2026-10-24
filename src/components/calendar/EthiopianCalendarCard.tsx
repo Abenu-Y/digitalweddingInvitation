@@ -25,7 +25,7 @@ export const EthiopianCalendarCard: React.FC<EthiopianCalendarCardProps> = ({
   quoteText = "We can't wait to celebrate with you!",
   weddingDateIso = '2026-11-15T15:00:00',
 }) => {
-  const { activeTheme } = useWedding();
+  const { activeTheme, weddingData } = useWedding();
   const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Amharic days of week abbreviations: ሰኞ, ማክሰኞ, ረቡዕ, ሐሙስ, አርብ, ቅዳሜ, እሁድ
@@ -36,7 +36,7 @@ export const EthiopianCalendarCard: React.FC<EthiopianCalendarCardProps> = ({
   const daysInMonth = 30;
 
   const googleCalendarUrl = () => {
-    const title = encodeURIComponent("Hosni & Jerusalem's Wedding (የሆስኒ እና እየሩሳሌም ሰርግ)");
+    const title = encodeURIComponent(`${weddingData.groomName} & ${weddingData.brideName}'s Wedding (የ${weddingData.groomNameAmharic || 'ሆስኒ'} እና ${weddingData.brideNameAmharic || 'እየሩሳሌም'} ሰርግ)`);
     const details = encodeURIComponent(
       `እሑድ፣ ህዳር 6፣ 2019 ዓ.ም (November 15, 2026)\nቦታ: ልደታ መካነየሱስ (ከዲአፍሪክ ሆቴል ወረድ ብሎ 5ኛ ፖሊስ ጣቢያ)\nየቃልኪዳን እና የአምልኮ ጊዜ: ከ9:00 እስከ 12:00\nWe would be honored to have you join us!`
     );
@@ -55,8 +55,8 @@ BEGIN:VEVENT
 UID:${Date.now()}@yeneserg.com
 DTSTAMP:${new Date().toISOString().replace(/-|:|\.\d\d\d/g, '')}
 DTSTART:${new Date(weddingDateIso).toISOString().replace(/-|:|\.\d\d\d/g, '')}
-SUMMARY:Hosni & Jerusalem's Wedding
-DESCRIPTION:እሑድ ህዳር 6 2019 - የሆስኒ እና እየሩሳሌም የሰርግ ጥሪ
+SUMMARY:${weddingData.groomName} & ${weddingData.brideName}'s Wedding
+DESCRIPTION:እሑድ ህዳር 6 2019 - የ${weddingData.groomNameAmharic || 'ሆስኒ'} እና ${weddingData.brideNameAmharic || 'እየሩሳሌም'} የሰርግ ጥሪ
 LOCATION:ልደታ መካነየሱስ, Addis Ababa, Ethiopia
 END:VEVENT
 END:VCALENDAR`;
@@ -64,7 +64,7 @@ END:VCALENDAR`;
     const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
     const link = document.createElement('a');
     link.href = window.URL.createObjectURL(blob);
-    link.setAttribute('download', 'Hosni-Jerusalem-Wedding.ics');
+    link.setAttribute('download', `${weddingData.groomName}-${weddingData.brideName}-Wedding.ics`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

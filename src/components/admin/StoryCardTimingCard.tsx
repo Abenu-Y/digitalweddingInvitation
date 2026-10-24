@@ -282,7 +282,7 @@ export const StoryCardTimingCard: React.FC = () => {
               </span>
             </h3>
             <p className="text-xs text-stone-400 mt-0.5">
-              Unique passcode known strictly to You, Hosni, &amp; Jerusalem.
+              Unique passcode known strictly to You, {weddingData.groomName}, &amp; {weddingData.brideName}.
             </p>
           </div>
         </div>

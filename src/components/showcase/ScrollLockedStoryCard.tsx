@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronLeft, ChevronRight, Sparkles, Pause, Play } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Sparkles, Pause } from 'lucide-react';
 import { SaveTheDateCard } from '../hero/SaveTheDateCard';
 import { CoupleStoryCard } from '../invitation-card/CoupleStoryCard';
 import { EthiopianCalendarCard } from '../calendar/EthiopianCalendarCard';
@@ -10,16 +10,16 @@ import { useWedding } from '@/context/WeddingContext';
 
 export const ScrollLockedStoryCard: React.FC = () => {
   const { weddingData, activeTheme } = useWedding();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const [slideProgress, setSlideProgress] = useState<number>(0);
   const [isHovered, setIsHovered] = useState<boolean>(false);
 
+  // Settings from admin panel (with safe fallbacks)
   const durationSec = weddingData.storyCardDurationSeconds ?? 12;
   const transitionDuration = weddingData.storyCardTransitionDuration ?? 0.75;
   const autoAdvance = weddingData.storyCardAutoAdvance ?? true;
   const pauseOnHover = weddingData.storyCardPauseOnHover ?? true;
-  const scrollHeightVh = weddingData.storyCardScrollHeightVh || 320;
 
   const slides = [
     {
@@ -74,75 +74,57 @@ export const ScrollLockedStoryCard: React.FC = () => {
     },
   ];
 
-  const isProgrammaticScroll = useRef<boolean>(false);
+  // 1. Advance to next slide and reset timer
+  const goToNextSlide = useCallback(() => {
+    setActiveSlide((prev) => (prev + 1) % slides.length);
+    setSlideProgress(0);
+  }, [slides.length]);
 
-  // Manual scroll sync: smoothly aligns active slide when user scrolls through section
-  const updateSlideFromScroll = useCallback(() => {
-    if (isProgrammaticScroll.current) return;
-    if (!containerRef.current) return;
-    const rect = containerRef.current.getBoundingClientRect();
-    const windowH = window.innerHeight;
-    const totalTravel = rect.height - windowH;
+  // 2. Go to previous slide and reset timer
+  const goToPrevSlide = useCallback(() => {
+    setActiveSlide((prev) => (prev - 1 + slides.length) % slides.length);
+    setSlideProgress(0);
+  }, [slides.length]);
 
-    if (totalTravel <= 0) return;
-
-    // How far we have scrolled into this section
-    const scrolled = -rect.top;
-    const progress = Math.max(0, Math.min(1, scrolled / totalTravel));
-
-    let target = 0;
-    if (progress < 0.33) {
-      target = 0;
-    } else if (progress < 0.67) {
-      target = 1;
-    } else {
-      target = 2;
-    }
-
-    setActiveSlide((prev) => {
-      if (prev !== target) {
-        setSlideProgress(0);
-        return target;
-      }
-      return prev;
-    });
+  // 3. Jump to specific slide and reset timer
+  const goToSlide = useCallback((index: number) => {
+    setActiveSlide(index);
+    setSlideProgress(0);
   }, []);
 
-  useEffect(() => {
-    window.addEventListener('scroll', updateSlideFromScroll, { passive: true });
-    window.addEventListener('resize', updateSlideFromScroll, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', updateSlideFromScroll);
-      window.removeEventListener('resize', updateSlideFromScroll);
-    };
-  }, [updateSlideFromScroll]);
-
-  // High-precision smooth progress timer that fills the story progress bar
+  // 4. Reliable timer: waits the exact specified durationSec, then advances to next slide (1 -> 2 -> 3 -> 1)
   useEffect(() => {
     if (!autoAdvance || durationSec <= 0) {
       setSlideProgress(0);
       return;
     }
 
-    const intervalMs = 60; // 16 updates per second for smooth progress fill
-    const stepIncrement = (intervalMs / (durationSec * 1000)) * 100;
+    // Interval tick every 50ms for buttery-smooth progress bar filling
+    const intervalMs = 50;
+    const progressStep = (intervalMs / (durationSec * 1000)) * 100;
 
     const timer = setInterval(() => {
-      if (!containerRef.current) return;
-      if (pauseOnHover && isHovered) return;
+      // Pause if hovered or touched and pauseOnHover is enabled
+      if (pauseOnHover && isHovered) {
+        return;
+      }
 
-      const rect = containerRef.current.getBoundingClientRect();
-      const windowH = window.innerHeight;
-      // Active when cards are currently centered in viewport
-      const isVisible = rect.top <= windowH * 0.55 && rect.bottom >= windowH * 0.45;
-      if (!isVisible) return;
+      // Only tick if the story card is visible in the viewport
+      if (sectionRef.current) {
+        const rect = sectionRef.current.getBoundingClientRect();
+        const windowH = window.innerHeight;
+        // In viewport check
+        const inView = rect.top < windowH && rect.bottom > 0;
+        if (!inView) {
+          return;
+        }
+      }
 
       setSlideProgress((prev) => {
-        const next = prev + stepIncrement;
+        const next = prev + progressStep;
         if (next >= 100) {
-          // Advance to next card smoothly
-          setActiveSlide((curr) => (curr + 1) % slides.length);
+          // Time fulfilled: move to next slide
+          goToNextSlide();
           return 0;
         }
         return next;
@@ -150,200 +132,212 @@ export const ScrollLockedStoryCard: React.FC = () => {
     }, intervalMs);
 
     return () => clearInterval(timer);
-  }, [autoAdvance, durationSec, pauseOnHover, isHovered, slides.length]);
+  }, [autoAdvance, durationSec, pauseOnHover, isHovered, goToNextSlide]);
 
-  const selectSlide = (targetIndex: number) => {
-    isProgrammaticScroll.current = true;
-    setActiveSlide(targetIndex);
-    setSlideProgress(0);
+  // 5. Left & Right Click Handlers (Immediately change slide & reset timer)
+  const handlePrevClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    goToPrevSlide();
+  };
 
-    if (containerRef.current) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const scrollTop = window.scrollY || document.documentElement.scrollTop;
-      const startY = scrollTop + rect.top;
-      const totalTravel = containerRef.current.offsetHeight - window.innerHeight;
-      
-      const progressOffsets = [0.10, 0.50, 0.90];
-      const targetY = startY + progressOffsets[targetIndex] * totalTravel;
-      window.scrollTo({ top: targetY, behavior: 'smooth' });
+  const handleNextClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    goToNextSlide();
+  };
+
+  // 6. Touch Swipe Support for intuitive mobile interaction
+  const touchStartX = useRef<number | null>(null);
+  const touchEndX = useRef<number | null>(null);
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.targetTouches[0].clientX;
+    touchEndX.current = null;
+    if (pauseOnHover) setIsHovered(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    touchEndX.current = e.targetTouches[0].clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (pauseOnHover) setIsHovered(false);
+    if (!touchStartX.current || !touchEndX.current) return;
+    const distance = touchStartX.current - touchEndX.current;
+    const minSwipeDistance = 45;
+
+    if (distance > minSwipeDistance) {
+      // Swiped left -> next slide
+      goToNextSlide();
+    } else if (distance < -minSwipeDistance) {
+      // Swiped right -> previous slide
+      goToPrevSlide();
     }
 
-    setTimeout(() => {
-      isProgrammaticScroll.current = false;
-    }, 1000);
-  };
-
-  const handleNext = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const nextIndex = (activeSlide + 1) % slides.length;
-    selectSlide(nextIndex);
-  };
-
-  const handlePrev = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const prevIndex = (activeSlide - 1 + slides.length) % slides.length;
-    selectSlide(prevIndex);
+    touchStartX.current = null;
+    touchEndX.current = null;
   };
 
   return (
-    <div
-      ref={containerRef}
+    <section
+      ref={sectionRef}
       id="invitation-story"
-      className="relative w-full"
-      style={{ height: `${scrollHeightVh}vh` }}
+      className="relative w-full py-12 sm:py-20 flex flex-col items-center justify-center px-3 sm:px-6 overflow-hidden"
     >
-      {/* Sticky container stays centered during scroll */}
-      <div className="sticky top-0 min-h-screen w-full flex flex-col items-center justify-center z-20 px-3 sm:px-6 py-6 overflow-hidden">
-        {/* Ambient gold/emerald background glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-[#0a3a2a]/25 blur-[140px] rounded-full pointer-events-none" />
+      {/* Ambient luxury gold/emerald background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#0a3a2a]/30 blur-[130px] rounded-full pointer-events-none" />
 
-        <div
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => setIsHovered(false)}
-          onTouchStart={() => setIsHovered(true)}
-          onTouchEnd={() => setIsHovered(false)}
-          className="relative w-full max-w-md mx-auto flex flex-col items-center"
-        >
-          {/* Top Story Header & Progress Indicators */}
-          <div className="w-full max-w-sm mb-3 px-2 flex flex-col items-center">
-            {/* Story Progress Bars with Smooth Real-Time Fill */}
-            <div className="flex items-center space-x-2 w-full mb-2">
-              {slides.map((_, idx) => {
-                let fillPercent = 0;
-                if (idx < activeSlide) {
-                  fillPercent = 100;
-                } else if (idx === activeSlide) {
-                  fillPercent = autoAdvance ? slideProgress : 100;
-                } else {
-                  fillPercent = 0;
-                }
+      <div
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        className="relative w-full max-w-md mx-auto flex flex-col items-center"
+      >
+        {/* Top Story Header & 3 Progress Bar Indicators */}
+        <div className="w-full max-w-sm mb-3 px-2 flex flex-col items-center">
+          {/* 3 Story Progress Bars with Smooth Real-Time Fill */}
+          <div className="flex items-center space-x-2 w-full mb-2">
+            {slides.map((_, idx) => {
+              let fillPercent = 0;
+              if (idx < activeSlide) {
+                fillPercent = 100;
+              } else if (idx === activeSlide) {
+                fillPercent = autoAdvance ? slideProgress : 100;
+              } else {
+                fillPercent = 0;
+              }
 
-                return (
-                  <div
-                    key={idx}
-                    onClick={() => selectSlide(idx)}
-                    className="h-1.5 flex-1 rounded-full cursor-pointer overflow-hidden bg-black/60 border border-white/10 transition-all hover:border-amber-400/50"
-                    title={`Go to slide ${idx + 1}`}
-                  >
-                    <div
-                      style={{
-                        width: `${fillPercent}%`,
-                        backgroundColor: activeTheme.accentHex,
-                        boxShadow: idx === activeSlide ? `0 0 10px ${activeTheme.glowColor}` : 'none',
-                      }}
-                      className="h-full transition-all duration-75 ease-linear"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Title & Indicator Info */}
-            <div
-              style={{ color: activeTheme.accentHex }}
-              className="flex items-center justify-between w-full text-xs font-cinzel"
-            >
-              <span className="flex items-center gap-1.5 min-w-0">
-                <Sparkles className="w-3.5 h-3.5 shrink-0" style={{ color: activeTheme.accentHex }} />
-                <span className="font-bold truncate">{slides[activeSlide].number}. {slides[activeSlide].title}</span>
-                <span className="text-stone-500">•</span>
-                <span className="font-amharic text-stone-300 truncate">{slides[activeSlide].titleAmharic}</span>
-              </span>
-              <div className="flex items-center space-x-1.5 shrink-0 font-semibold text-stone-400">
-                {isHovered && pauseOnHover && (
-                  <span className="text-[10px] font-sans px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold flex items-center gap-0.5">
-                    <Pause className="w-2.5 h-2.5" /> Paused
-                  </span>
-                )}
-                <span>
-                  {activeSlide + 1} / {slides.length}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* The Single Card Container with Navigation Arrows (< >) */}
-          <div className="relative w-full max-w-sm flex items-center justify-center">
-            {/* Previous Arrow Button (<) */}
-            <button
-              onClick={handlePrev}
-              style={{
-                backgroundColor: `${activeTheme.cardBgHex}ea`,
-                borderColor: activeTheme.cardBorderHex,
-                color: activeTheme.accentHex,
-                boxShadow: `0 4px 20px rgba(0,0,0,0.8), 0 0 15px ${activeTheme.glowColor}`,
-              }}
-              className="absolute -left-3 sm:-left-7 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border flex items-center justify-center z-30 backdrop-blur-md transition-all active:scale-95 group hover:scale-105 cursor-pointer"
-              aria-label="Previous card"
-            >
-              <ChevronLeft className="w-6 h-6 group-hover:-translate-x-0.5 transition-transform" />
-            </button>
-
-            {/* Active Card with Smooth Sequential Animation */}
-            <div className="w-full overflow-hidden">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeSlide}
-                  initial={{ opacity: 0, scale: 0.97, y: 14 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.97, y: -14 }}
-                  transition={{
-                    duration: transitionDuration,
-                    ease: [0.22, 1, 0.36, 1], // Silky smooth cubic-bezier
-                  }}
-                  className="w-full"
+              return (
+                <div
+                  key={idx}
+                  onClick={() => goToSlide(idx)}
+                  className="h-1.5 flex-1 rounded-full cursor-pointer overflow-hidden bg-black/60 border border-white/10 transition-all hover:border-amber-400/50"
+                  title={`Click to jump to slide ${idx + 1}`}
                 >
-                  {slides[activeSlide].component}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-
-            {/* Next Arrow Button (>) */}
-            <button
-              onClick={handleNext}
-              style={{
-                backgroundColor: `${activeTheme.cardBgHex}ea`,
-                borderColor: activeTheme.cardBorderHex,
-                color: activeTheme.accentHex,
-                boxShadow: `0 4px 20px rgba(0,0,0,0.8), 0 0 15px ${activeTheme.glowColor}`,
-              }}
-              className="absolute -right-3 sm:-right-7 top-1/2 -translate-y-1/2 w-11 h-11 rounded-full border flex items-center justify-center z-30 backdrop-blur-md transition-all active:scale-95 group hover:scale-105 cursor-pointer"
-              aria-label="Next card"
-            >
-              <ChevronRight className="w-6 h-6 group-hover:translate-x-0.5 transition-transform" />
-            </button>
+                  <div
+                    style={{
+                      width: `${fillPercent}%`,
+                      backgroundColor: activeTheme.accentHex,
+                      boxShadow: idx === activeSlide ? `0 0 10px ${activeTheme.glowColor}` : 'none',
+                    }}
+                    className="h-full transition-all duration-75 ease-linear"
+                  />
+                </div>
+              );
+            })}
           </div>
 
-          {/* Slide Indicator Quick Selectors */}
-          <div className="flex items-center justify-center space-x-2 mt-4 z-20">
-            {slides.map((s, idx) => (
-              <button
-                key={s.id}
-                onClick={() => selectSlide(idx)}
-                style={
-                  activeSlide === idx
-                    ? {
-                        backgroundColor: `${activeTheme.cardBgHex}cc`,
-                        color: activeTheme.accentHex,
-                        borderColor: activeTheme.highlightHex,
-                        boxShadow: `0 0 15px ${activeTheme.glowColor}`,
-                      }
-                    : {
-                        backgroundColor: 'rgba(0,0,0,0.4)',
-                        color: '#9ca3af',
-                        borderColor: 'rgba(255,255,255,0.1)',
-                      }
-                }
-                className="px-3 py-1 rounded-full text-[11px] font-cinzel transition-all border cursor-pointer hover:border-amber-400/40"
-              >
-                {s.number}. {s.title}
-              </button>
-            ))}
+          {/* Title & Indicator Info */}
+          <div
+            style={{ color: activeTheme.accentHex }}
+            className="flex items-center justify-between w-full text-xs font-cinzel select-none"
+          >
+            <span className="flex items-center gap-1.5 min-w-0">
+              <Sparkles className="w-3.5 h-3.5 shrink-0" style={{ color: activeTheme.accentHex }} />
+              <span className="font-bold truncate">{slides[activeSlide].number}. {slides[activeSlide].title}</span>
+              <span className="text-stone-500">•</span>
+              <span className="font-amharic text-stone-300 truncate">{slides[activeSlide].titleAmharic}</span>
+            </span>
+            <div className="flex items-center space-x-1.5 shrink-0 font-semibold text-stone-400">
+              {isHovered && pauseOnHover && (
+                <span className="text-[10px] font-sans px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold flex items-center gap-0.5 animate-pulse">
+                  <Pause className="w-2.5 h-2.5" /> Paused
+                </span>
+              )}
+              <span>
+                {activeSlide + 1} / {slides.length}
+              </span>
+            </div>
           </div>
         </div>
+
+        {/* The Card Container with Floating Interactive Arrows (< >) */}
+        <div className="relative w-full max-w-sm flex items-center justify-center">
+          {/* Previous Arrow Button (<) - Changes slide immediately on click! */}
+          <button
+            type="button"
+            onClick={handlePrevClick}
+            style={{
+              backgroundColor: `${activeTheme.cardBgHex}f0`,
+              borderColor: activeTheme.cardBorderHex,
+              color: activeTheme.accentHex,
+              boxShadow: `0 6px 24px rgba(0,0,0,0.85), 0 0 18px ${activeTheme.glowColor}`,
+            }}
+            className="absolute -left-4 sm:-left-7 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center z-40 backdrop-blur-md transition-all active:scale-90 hover:scale-110 cursor-pointer touch-manipulation"
+            aria-label="Previous slide"
+            title="Previous slide"
+          >
+            <ChevronLeft className="w-6 h-6 sm:w-7 sm:h-7 group-hover:-translate-x-0.5 transition-transform" />
+          </button>
+
+          {/* Active Card with Smooth Sequential Animation */}
+          <div className="w-full overflow-hidden">
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeSlide}
+                initial={{ opacity: 0, scale: 0.97, y: 14 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.97, y: -14 }}
+                transition={{
+                  duration: transitionDuration,
+                  ease: [0.22, 1, 0.36, 1], // Silky smooth royal cubic-bezier
+                }}
+                className="w-full"
+              >
+                {slides[activeSlide].component}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+
+          {/* Next Arrow Button (>) - Changes slide immediately on click! */}
+          <button
+            type="button"
+            onClick={handleNextClick}
+            style={{
+              backgroundColor: `${activeTheme.cardBgHex}f0`,
+              borderColor: activeTheme.cardBorderHex,
+              color: activeTheme.accentHex,
+              boxShadow: `0 6px 24px rgba(0,0,0,0.85), 0 0 18px ${activeTheme.glowColor}`,
+            }}
+            className="absolute -right-4 sm:-right-7 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center z-40 backdrop-blur-md transition-all active:scale-90 hover:scale-110 cursor-pointer touch-manipulation"
+            aria-label="Next slide"
+            title="Next slide"
+          >
+            <ChevronRight className="w-6 h-6 sm:w-7 sm:h-7 group-hover:translate-x-0.5 transition-transform" />
+          </button>
+        </div>
+
+        {/* Slide Indicator Quick Selectors (Pills) */}
+        <div className="flex items-center justify-center space-x-2 mt-4 z-20">
+          {slides.map((s, idx) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => goToSlide(idx)}
+              style={
+                activeSlide === idx
+                  ? {
+                      backgroundColor: `${activeTheme.cardBgHex}ee`,
+                      color: activeTheme.accentHex,
+                      borderColor: activeTheme.highlightHex,
+                      boxShadow: `0 0 15px ${activeTheme.glowColor}`,
+                    }
+                  : {
+                      backgroundColor: 'rgba(0,0,0,0.4)',
+                      color: '#9ca3af',
+                      borderColor: 'rgba(255,255,255,0.1)',
+                    }
+              }
+              className="px-3 py-1.5 rounded-full text-[11px] font-cinzel transition-all border cursor-pointer hover:border-amber-400/50 hover:text-white"
+            >
+              {s.number}. {s.title}
+            </button>
+          ))}
+        </div>
       </div>
-    </div>
+    </section>
   );
 };
