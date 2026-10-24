@@ -110,20 +110,10 @@ export const BoldScrollCountdown: React.FC<BoldScrollCountdownProps> = ({
           whileInView={{ opacity: 1 }}
           viewport={{ once: false, amount: 0.3 }}
           transition={{ duration: 0.8, delay: 0.2 }}
-          className="font-serif italic text-sm sm:text-base mb-1 opacity-90"
+          className="font-serif italic text-sm sm:text-base mb-10 opacity-90"
           style={{ color: activeTheme.secondaryTextHex }}
         >
           Until we become one in love
-        </motion.p>
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: false, amount: 0.3 }}
-          transition={{ duration: 0.8, delay: 0.25 }}
-          className="font-amharic text-base sm:text-lg font-medium mb-10 tracking-wide"
-          style={{ color: activeTheme.accentHex }}
-        >
-          በፍቅር አንድ እስክንሆን
         </motion.p>
 
         {/* BOLD 4-CARD GRID WITH SCROLL-IN FROM SIDES ANIMATION */}

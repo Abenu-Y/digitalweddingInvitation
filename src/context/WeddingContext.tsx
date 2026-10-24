@@ -80,12 +80,23 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
             ? 'Hosni & Jerusalem Royal Melody (የሰርግ ዜማ)'
             : parsed.backgroundMusicTitle;
 
+          const storyCardDurationSeconds = (!parsed.storyCardDurationSeconds || parsed.storyCardDurationSeconds === 6)
+            ? 12
+            : parsed.storyCardDurationSeconds;
+          const storyCardTransitionDuration = parsed.storyCardTransitionDuration ?? 0.75;
+          const storyCardAutoAdvance = parsed.storyCardAutoAdvance ?? true;
+          const storyCardPauseOnHover = parsed.storyCardPauseOnHover ?? true;
+
           setWeddingData({
             ...initialWeddingData,
             ...parsed,
             defaultTheme,
             backgroundMusicUrl,
             backgroundMusicTitle,
+            storyCardDurationSeconds,
+            storyCardTransitionDuration,
+            storyCardAutoAdvance,
+            storyCardPauseOnHover,
           });
         }
       }

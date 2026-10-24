@@ -84,11 +84,8 @@ export const LuxuryCountdownCard: React.FC<LuxuryCountdownCardProps> = ({
           </div>
 
           {/* Romantic Text */}
-          <p className="font-serif italic text-xs sm:text-sm text-[#edd58a]/85 mb-1">
+          <p className="font-serif italic text-xs sm:text-sm text-[#edd58a]/85 mb-6">
             Until we become one in love
-          </p>
-          <p className="font-amharic text-sm sm:text-base text-[#edd58a] font-medium mb-6">
-            በፍቅር አንድ እስክንሆን
           </p>
 
           {/* Bottom Action */}

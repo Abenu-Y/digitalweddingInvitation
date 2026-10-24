@@ -510,7 +510,7 @@ export const WaxSealEnvelope: React.FC = () => {
           >
             {/* Elegant Serif Invitation Subtext */}
             <h2 className="font-cinzel text-xs sm:text-sm tracking-[0.28em] text-[#edd58a] uppercase font-medium pl-[0.28em] mb-2">
-              You Are Cordially Invited
+              You Are Invited
             </h2>
 
             {/* Subtle Interactive Instruction with Animated Finger Cursor & Gold Lines */}

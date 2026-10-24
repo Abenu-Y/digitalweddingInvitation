@@ -9,7 +9,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://digitalweddinginvitation.vercel.app'),
   openGraph: {
     title: "Hosni & Jerusalem | Save The Date",
-    description: "You are cordially invited to celebrate the royal wedding of Hosni & Jerusalem. Click to open your invitation.",
+    description: "You are invited to celebrate the royal wedding of Hosni & Jerusalem. Click to open your invitation.",
     type: "website",
     images: [
       {
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Hosni & Jerusalem | Save The Date",
-    description: "You are cordially invited to celebrate the royal wedding of Hosni & Jerusalem. Click to open your invitation.",
+    description: "You are invited to celebrate the royal wedding of Hosni & Jerusalem. Click to open your invitation.",
     images: ["/og-image.png"],
   },
   icons: {

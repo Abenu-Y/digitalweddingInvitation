@@ -157,4 +157,7 @@ export interface WeddingData {
   adminPasscode?: string;
   storyCardDurationSeconds?: number;
   storyCardScrollHeightVh?: number;
+  storyCardTransitionDuration?: number;
+  storyCardAutoAdvance?: boolean;
+  storyCardPauseOnHover?: boolean;
 }

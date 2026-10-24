@@ -449,7 +449,7 @@ export default function AdminPage() {
       icon: Palette,
       items: [
         { id: 'themes', label: adminLang === 'en' ? 'Themes & Styles' : 'የገጽታ ምርጫዎች', icon: Palette },
-        { id: 'speed', label: adminLang === 'en' ? 'Auto-Scroll & Timing' : 'የስክሮል ፍጥነትና ቆይታ', icon: Gauge },
+        { id: 'speed', label: adminLang === 'en' ? 'Auto-Scroll & Slide Timing' : 'የስክሮልና የስላይድ ፍጥነት', icon: Gauge },
       ],
     },
     {

@@ -16,7 +16,7 @@ interface CoupleStoryCardProps {
 
 export const CoupleStoryCard: React.FC<CoupleStoryCardProps> = ({
   groomName = 'Hosni',
-  brideName = 'Jerusalem',
+  brideName = 'Eyerusalem',
   photoUrl = '/images/ethiopian_couple_holding_hands.jpg',
   subtitle = 'With Love & Warm Regards',
   messageEn = 'We would be honored to have you join us on this beautiful occasion and share in our happiness. Your presence and blessings will mean a lot to us. With love and warm regards,',
@@ -32,13 +32,13 @@ export const CoupleStoryCard: React.FC<CoupleStoryCardProps> = ({
           <div className="relative w-full aspect-[4/3] rounded-xl overflow-hidden border border-[#d4af37]/50 shadow-2xl mb-6 group">
             {/* Inner gold frame line */}
             <div className="absolute inset-1.5 border border-[#d4af37]/30 rounded-lg pointer-events-none z-10" />
-            
+
             <img
               src={photoUrl}
               alt={`${groomName} & ${brideName}`}
               className="w-full h-full object-cover object-center transform group-hover:scale-105 transition-transform duration-700"
             />
-            
+
             {/* Subtle vignette */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#061914]/60 via-transparent to-transparent pointer-events-none" />
           </div>

@@ -91,7 +91,7 @@ export const PersonalizedCard: React.FC = () => {
           {/* Recipient Guest Honor Badge */}
           <div className="text-center mb-8">
             <p className="text-xs uppercase tracking-widest text-stone-400 mb-2">
-              {language === 'am' ? 'የተከበሩ የክብር እንግዳችን' : 'Cordially Invited'}
+              {language === 'am' ? 'የተከበሩ የክብር እንግዳችን' : 'Invited'}
             </p>
             <div className="inline-block py-2.5 px-6 rounded-2xl bg-black/50 border border-amber-500/40 shadow-xl backdrop-blur-md">
               <h3 className="text-xl sm:text-3xl font-cinzel font-bold text-amber-100">
