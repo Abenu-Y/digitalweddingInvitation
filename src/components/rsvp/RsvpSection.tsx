@@ -365,7 +365,7 @@ export const RsvpSection: React.FC = () => {
                   </>
                 )}
               </button>
-
+{/* 
               <div className="flex items-center justify-center space-x-1.5 text-[11px] text-stone-400 pt-1">
                 <Database className="w-3 h-3 text-emerald-400" />
                 <span>
@@ -373,7 +373,7 @@ export const RsvpSection: React.FC = () => {
                     ? 'ቀጥታ በሰርጉ ዳታቤዝ ይቀመጣል'
                     : 'Saves directly to MongoDB database'}
                 </span>
-              </div>
+              </div> */}
             </form>
           )}
         </motion.div>
