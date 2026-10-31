@@ -477,7 +477,7 @@ export const WaxSealEnvelope: React.FC = () => {
                             textShadow: '0.5px 0.5px 0px rgba(255,255,255,0.4), -0.5px -0.5px 0px rgba(0,0,0,0.4)',
                           }}
                         >
-                          H&amp;J
+                          H&amp;E
                         </span>
 
                         {/* Botanical Flourish at bottom of seal */}

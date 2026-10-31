@@ -43,17 +43,6 @@ export async function GET(req: NextRequest) {
     await ensureWishesIndexes(db);
 
     // Fast lean projection: exclude MongoDB internal _id or map it cleanly
-    const count = await collection.countDocuments();
-    if (count === 0) {
-      // Auto-seed initial demo wishes to MongoDB
-      console.log('🌱 Seeding initial wedding wishes into MongoDB collection...');
-      const seedDocs = initialWeddingData.wishes.map((w) => ({
-        ...w,
-        createdAt: w.createdAt || new Date().toISOString(),
-      }));
-      await collection.insertMany(seedDocs);
-    }
-
     const url = new URL(req.url);
     const filterApproved = url.searchParams.get('approvedOnly') === 'true';
     const query = filterApproved ? { approved: true } : {};
@@ -96,12 +85,12 @@ export async function POST(req: NextRequest) {
     }
 
     const newWish: WishMessage = {
-      id: `w-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      id: body.id || `w-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
       guestName,
       message,
-      createdAt: new Date().toISOString(),
-      likes: 0,
-      approved: true, // Default visible; admin can hide/edit anytime
+      createdAt: body.createdAt || new Date().toISOString(),
+      likes: typeof body.likes === 'number' ? body.likes : 0,
+      approved: body.approved !== undefined ? Boolean(body.approved) : true,
     };
 
     const db = await getDatabase();

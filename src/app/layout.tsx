@@ -43,6 +43,32 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
+        {/* Suppress third-party Chrome extension timeouts from triggering Next.js dev error overlay */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                if (typeof window === 'undefined') return;
+                var isExtensionError = function(e) {
+                  var str = (e ? (e.message || e.filename || (e.reason && (e.reason.message || e.reason.stack)) || '') : '') + '';
+                  return str.indexOf('chrome-extension') !== -1 || str.indexOf('chrome:') !== -1;
+                };
+                window.addEventListener('unhandledrejection', function(e) {
+                  if (isExtensionError(e)) {
+                    e.preventDefault();
+                    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                  }
+                }, true);
+                window.addEventListener('error', function(e) {
+                  if (isExtensionError(e)) {
+                    e.preventDefault();
+                    if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+                  }
+                }, true);
+              })();
+            `,
+          }}
+        />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link

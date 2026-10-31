@@ -103,8 +103,18 @@ export const WishesWall: React.FC = () => {
           {/* Live Wishes Feed */}
           <div className="lg:col-span-7 space-y-4">
             {approvedWishes.length === 0 ? (
-              <div className="p-8 text-center rounded-2xl bg-black/20 border border-white/5 text-stone-400 text-xs">
-                No wishes posted yet. Be the first to leave a blessing!
+              <div className="p-10 text-center rounded-2xl bg-black/30 border border-white/10 text-stone-300 text-sm backdrop-blur-sm flex flex-col items-center justify-center space-y-2">
+                <Sparkles className="w-5 h-5 text-amber-400 animate-pulse" />
+                <p className="font-medium text-amber-200/90">
+                  {language === 'am'
+                    ? 'እስካሁን ምንም መልካም ምኞት አልተጻፈም። የመጀመሪያው የክብር እንግዳ ሆነው ይፃፉ!'
+                    : 'No blessings posted yet. Be the first honored guest to leave a blessing!'}
+                </p>
+                <p className="text-xs text-stone-400">
+                  {language === 'am'
+                    ? 'ምኞትዎን በግራ በኩል ባለው ቅጽ አስገብተው ይላኩ።'
+                    : 'Write and submit your warm wishes using the form on the left.'}
+                </p>
               </div>
             ) : (
               approvedWishes.map((w, idx) => (

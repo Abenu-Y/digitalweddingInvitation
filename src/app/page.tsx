@@ -43,12 +43,12 @@ function WeddingContent() {
 
       {/* Background Audio Player and Natural Auto-Scroll Controller */}
       <AudioPlayer />
-      <AutoScrollController speedPixelsPerSecond={40} initialActive={true} />
-      
+      {/* <AutoScrollController speedPixelsPerSecond={40} initialActive={true} /> */}
+
       {/* 1. Page starts directly from the top of the Grand Hero Section (Pic 2) */}
       <HeroSection />
 
-      {/* 2. Interactive Single Card with < > arrows that sequentially scrolls through Card 1 -> 2 -> 3 (or 3 -> 2 -> 1 when scrolling back) */}
+      {/* 2. Interactive Single Card with < > arrows that sequentially scrolls through Card 1 -s> 2 -> 3 (or 3 -> 2 -> 1 when scrolling back) */}
       <ScrollLockedStoryCard />
 
       {/* 3. Bold, non-carousel Countdown that animates into view on scroll (Pic 4) */}

@@ -37,8 +37,8 @@ export default function InviteGuestPage() {
 
       {/* Background Audio Player and Natural Auto-Scroll Controller */}
       <AudioPlayer />
-      <AutoScrollController speedPixelsPerSecond={40} initialActive={true} />
-      
+      {/* <AutoScrollController speedPixelsPerSecond={40} initialActive={true} /> */}
+
       {/* 1. Page starts directly from the top of the Grand Hero Section (Pic 2) */}
       <HeroSection />
 

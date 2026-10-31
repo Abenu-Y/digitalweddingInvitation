@@ -123,7 +123,7 @@ END:VCALENDAR`;
           transition={{ delay: 0.2, duration: 0.8 }}
           className="text-xs sm:text-sm uppercase tracking-[0.35em] text-amber-300 font-cinzel font-semibold mb-3"
         >
-          {language === 'am' ? 'የክብር የሰርግ ጥሪ' : 'The Royal Wedding Celebration Of'}
+          {language === 'am' ? 'የክብር የሰርግ ጥሪ' : 'The Wedding Celebration Of'}
         </motion.p>
 
         {/* Groom & Bride Royal Names */}

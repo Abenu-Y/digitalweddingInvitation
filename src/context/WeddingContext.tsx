@@ -103,15 +103,24 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         console.warn('MongoDB status check fallback:', err);
       });
 
-    // 2. Fetch fresh wishes in background
+    // 2. Fetch fresh wishes from MongoDB
     fetch('/api/wishes')
       .then((res) => res.json())
       .then((data) => {
-        if (data?.success && Array.isArray(data.wishes) && data.wishes.length > 0) {
+        if (data?.success && Array.isArray(data.wishes)) {
+          // Remove any legacy mock/sample wishes
+          const cleanWishes = data.wishes.filter(
+            (w: WishMessage) =>
+              !['w-1', 'w-2', 'w-3'].includes(w.id) &&
+              w.guestName !== 'Dr. Dawit Solomon' &&
+              w.guestName !== 'Ato Yohannes Bekele' &&
+              w.guestName !== 'Samuel Kebede' &&
+              !w.message?.includes('Abebe & Selamawit')
+          );
           setWeddingData((prev) => {
             const updated = {
               ...prev,
-              wishes: data.wishes,
+              wishes: cleanWishes,
             };
             try {
               localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
@@ -121,9 +130,22 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         }
       })
       .catch((err) => {
-        console.warn('Wishes SWR fetch fallback to local cache:', err);
+        console.warn('Wishes fetch fallback:', err);
       });
   }, []);
+
+  // Helper to remove any legacy sample wishes from cached state
+  const filterOutSampleWishes = (wishesList: WishMessage[]): WishMessage[] => {
+    if (!Array.isArray(wishesList)) return [];
+    return wishesList.filter(
+      (w) =>
+        !['w-1', 'w-2', 'w-3'].includes(w.id) &&
+        w.guestName !== 'Dr. Dawit Solomon' &&
+        w.guestName !== 'Ato Yohannes Bekele' &&
+        w.guestName !== 'Samuel Kebede' &&
+        !w.message?.includes('Abebe & Selamawit')
+    );
+  };
 
   // Load from local storage with automated code update detection & migration
   useEffect(() => {
@@ -142,8 +164,9 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         localStorage.removeItem(LEGACY_STORAGE_KEY);
         const freshData: WeddingData = {
           ...initialWeddingData,
+          wishes: [],
           _contentSignature: currentSignature,
-          dataVersion: initialWeddingData.dataVersion ?? 2,
+          dataVersion: initialWeddingData.dataVersion ?? 3,
         };
         setWeddingData(freshData);
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(freshData));
@@ -151,7 +174,7 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         return;
       }
 
-      // Check current v2 storage, or fallback to legacy v1 storage
+      // Check current v2/v3 storage, or fallback to legacy v1 storage
       const stored = localStorage.getItem(LOCAL_STORAGE_KEY) || localStorage.getItem(LEGACY_STORAGE_KEY);
 
       if (stored) {
@@ -161,23 +184,23 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const isCodeUpdated =
           !parsed._contentSignature ||
           parsed._contentSignature !== currentSignature ||
-          (parsed.dataVersion ?? 1) < (initialWeddingData.dataVersion ?? 2) ||
+          (parsed.dataVersion ?? 1) < (initialWeddingData.dataVersion ?? 3) ||
           parsed.brideName === 'Jerusalem' ||
           parsed.groomName === 'Abebe';
 
+        const cleanedWishes = filterOutSampleWishes(parsed.wishes || []);
+
         if (isCodeUpdated) {
-          // Code has new updates (e.g. brideName changed to 'Eyerusalem', updated bank accounts, durations)
-          // Intelligently sync updated code fields over parsed data while preserving custom user guests & wishes
+          // Code has new updates
           const syncedData: WeddingData = {
             ...parsed,
-            ...initialWeddingData, // Guarantees latest code changes take effect immediately!
-            // Preserve dynamic user-added data
+            ...initialWeddingData,
             guests: parsed.guests && parsed.guests.length > 0 ? parsed.guests : initialWeddingData.guests,
-            wishes: parsed.wishes && parsed.wishes.length > 0 ? parsed.wishes : initialWeddingData.wishes,
+            wishes: cleanedWishes,
             adminPasscode: parsed.adminPasscode || initialWeddingData.adminPasscode,
             defaultTheme: parsed.defaultTheme || initialWeddingData.defaultTheme,
             _contentSignature: currentSignature,
-            dataVersion: initialWeddingData.dataVersion ?? 2,
+            dataVersion: initialWeddingData.dataVersion ?? 3,
           };
 
           setWeddingData(syncedData);
@@ -188,15 +211,17 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
           setWeddingData({
             ...initialWeddingData,
             ...parsed,
+            wishes: cleanedWishes,
             _contentSignature: currentSignature,
           });
         }
       } else {
-        // First visit: save initial wedding data with current signature
+        // First visit
         const freshData: WeddingData = {
           ...initialWeddingData,
+          wishes: [],
           _contentSignature: currentSignature,
-          dataVersion: initialWeddingData.dataVersion ?? 2,
+          dataVersion: initialWeddingData.dataVersion ?? 3,
         };
         setWeddingData(freshData);
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(freshData));

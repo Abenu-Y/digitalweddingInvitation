@@ -1,4 +1,12 @@
 import { MongoClient, Db } from 'mongodb';
+import dns from 'dns';
+
+// Fix querySrv ECONNREFUSED on Windows and restrictive DNS resolvers by using public DNS
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch (e) {
+  // Ignored if setting DNS servers is not allowed in runtime
+}
 
 /**
  * MongoDB Connection Singleton for Next.js App Router.
@@ -16,24 +24,38 @@ interface GlobalMongo {
 declare const global: typeof globalThis & GlobalMongo;
 
 let clientPromise: Promise<MongoClient> | null = null;
+// Force clear stale promise from before DNS fix
+if (typeof global !== 'undefined') {
+  delete (global as any)._mongoClientPromise;
+}
 
-if (uri) {
-  // Use connection timeout options to fail fast if unreachable (e.g. 3s timeout)
-  // This guarantees the app never hangs or stalls if MongoDB is unavailable!
+function getClientPromise(): Promise<MongoClient> | null {
+  if (!uri) return null;
+
   const options = {
-    serverSelectionTimeoutMS: 3000,
-    connectTimeoutMS: 3000,
+    serverSelectionTimeoutMS: 5000,
+    connectTimeoutMS: 5000,
   };
 
   if (process.env.NODE_ENV === 'development') {
     if (!global._mongoClientPromise) {
       const client = new MongoClient(uri, options);
-      global._mongoClientPromise = client.connect();
+      global._mongoClientPromise = client.connect().catch((err) => {
+        // Reset on failure so subsequent attempts can reconnect
+        global._mongoClientPromise = undefined;
+        throw err;
+      });
     }
-    clientPromise = global._mongoClientPromise;
+    return global._mongoClientPromise;
   } else {
-    const client = new MongoClient(uri, options);
-    clientPromise = client.connect();
+    if (!clientPromise) {
+      const client = new MongoClient(uri, options);
+      clientPromise = client.connect().catch((err) => {
+        clientPromise = null;
+        throw err;
+      });
+    }
+    return clientPromise;
   }
 }
 
@@ -42,11 +64,12 @@ if (uri) {
  * Returns null if MONGODB_URI is not set or if connection times out/fails.
  */
 export async function getDatabase(): Promise<Db | null> {
-  if (!clientPromise) {
+  const promise = getClientPromise();
+  if (!promise) {
     return null;
   }
   try {
-    const client = await clientPromise;
+    const client = await promise;
     return client.db(dbName);
   } catch (error) {
     console.warn('⚠️ MongoDB connection failed, falling back to local storage cache:', error instanceof Error ? error.message : error);

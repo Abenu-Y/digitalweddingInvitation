@@ -62,16 +62,16 @@ export const initialWeddingData: WeddingData = {
       icon: "Church",
       eventType: "church"
     },
-    {
-      id: "sch-2",
-      time: "ከ12:30 ጀምሮ (06:30 PM Onwards)",
-      title: "Dinner & Celebration",
-      titleAmharic: "የእራት እና የደስታ መጋራት ፕሮግራም",
-      description: "ከቤተሰብ እና ከወዳጅ ዘመድ ጋር የፍቅር እራት እና የደስታ ጊዜ።",
-      location: "አዲስ አበባ (Addis Ababa)",
-      icon: "UtensilsCrossed",
-      eventType: "reception"
-    }
+    // {
+    //   id: "sch-2",
+    //   time: "ከ12:30 ጀምሮ (06:30 PM Onwards)",
+    //   title: "Dinner & Celebration",
+    //   titleAmharic: "የእራት እና የደስታ መጋራት ፕሮግራም",
+    //   description: "ከቤተሰብ እና ከወዳጅ ዘመድ ጋር የፍቅር እራት እና የደስታ ጊዜ።",
+    //   location: "አዲስ አበባ (Addis Ababa)",
+    //   icon: "UtensilsCrossed",
+    //   eventType: "reception"
+    // }
   ],
 
   venues: [
@@ -293,32 +293,7 @@ export const initialWeddingData: WeddingData = {
     }
   ],
 
-  wishes: [
-    {
-      id: "w-1",
-      guestName: "Dr. Dawit Solomon",
-      message: "May the Almighty God bless your union with endless love, peace, prosperity, and joy. Congratulations Abebe & Selamawit! (መልካም የጋብቻ ዘመን)",
-      createdAt: "2026-10-01T12:00:00",
-      likes: 18,
-      approved: true
-    },
-    {
-      id: "w-2",
-      guestName: "Ato Yohannes Bekele",
-      message: "እግዚአብሔር አምላክ የፍቅር፣ የሰላምና የጤና ቤት ያድርግላችሁ። ፍቅራችሁ እንደ ወይን ጠጅ እያደረ ይጣፍጥ!",
-      createdAt: "2026-10-03T16:30:00",
-      likes: 24,
-      approved: true
-    },
-    {
-      id: "w-3",
-      guestName: "Samuel Kebede",
-      message: "Most beautiful couple ever! Wishing you a lifetime of joy, adventures, and endless happiness. Let's make this the best wedding Addis has ever seen!",
-      createdAt: "2026-10-05T09:15:00",
-      likes: 12,
-      approved: true
-    }
-  ],
+  wishes: [],
   showLoveStory: false,
   showGallery: false,
   autoScrollSpeed: 40,
@@ -328,5 +303,5 @@ export const initialWeddingData: WeddingData = {
   storyCardTransitionDuration: 0.75,
   storyCardAutoAdvance: true,
   storyCardPauseOnHover: true,
-  dataVersion: 2,
+  dataVersion: 3,
 };
