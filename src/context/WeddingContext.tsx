@@ -36,6 +36,13 @@ interface WeddingContextType {
     dietaryRestrictions?: string;
     notes?: string;
   }) => void;
+  submitRsvpByName: (rsvp: {
+    name: string;
+    phone?: string;
+    status?: 'attending' | 'declined';
+    attendingCount?: number;
+    notes?: string;
+  }) => Promise<{ success: boolean; source: string; rsvp: any }>;
   
   // Wishes Wall
   addWish: (guestName: string, message: string) => void;
@@ -131,6 +138,54 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
       })
       .catch((err) => {
         console.warn('Wishes fetch fallback:', err);
+      });
+
+    // 3. Fetch fresh RSVPs from MongoDB in background
+    fetch('/api/rsvp')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && Array.isArray(data.rsvps) && data.rsvps.length > 0) {
+          setWeddingData((prev) => {
+            const guestMap = new Map(prev.guests.map((g) => [g.name.toLowerCase().trim(), g]));
+            data.rsvps.forEach((r: any) => {
+              const key = String(r.name || '').toLowerCase().trim();
+              if (guestMap.has(key)) {
+                const existing = guestMap.get(key)!;
+                guestMap.set(key, {
+                  ...existing,
+                  rsvpStatus: r.status,
+                  phone: r.phone || existing.phone,
+                  notes: r.notes || existing.notes,
+                  rsvpUpdatedAt: r.createdAt,
+                });
+              } else {
+                guestMap.set(key, {
+                  id: r.id || `guest-${Date.now()}`,
+                  slug: key.replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `guest-${Date.now()}`,
+                  name: r.name,
+                  phone: r.phone,
+                  group: 'Special Guests',
+                  allowedPlusOnes: Math.max(0, (r.attendingCount || 1) - 1),
+                  attendingPlusOnes: Math.max(0, (r.attendingCount || 1) - 1),
+                  useCustomMessage: false,
+                  themeId: 'habesha-gold',
+                  invitedEvents: ['church'],
+                  rsvpStatus: r.status,
+                  notes: r.notes,
+                  rsvpUpdatedAt: r.createdAt,
+                });
+              }
+            });
+            const updated = { ...prev, guests: Array.from(guestMap.values()) };
+            try {
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updated));
+            } catch (e) {}
+            return updated;
+          });
+        }
+      })
+      .catch((err) => {
+        console.warn('RSVP fetch fallback:', err);
       });
   }, []);
 
@@ -359,6 +414,97 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }));
   };
 
+  const submitRsvpByName = async (rsvp: {
+    name: string;
+    phone?: string;
+    status?: 'attending' | 'declined';
+    attendingCount?: number;
+    notes?: string;
+  }) => {
+    const cleanName = rsvp.name.trim();
+    if (!cleanName) {
+      return { success: false, source: 'validation', rsvp: null };
+    }
+
+    const rsvpStatus = rsvp.status === 'declined' ? 'declined' : 'attending';
+    const count = Math.max(1, Number(rsvp.attendingCount || 1));
+    const rsvpPayload = {
+      id: `rsvp-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+      name: cleanName,
+      phone: rsvp.phone?.trim() || '',
+      status: rsvpStatus,
+      attendingCount: count,
+      notes: rsvp.notes?.trim() || '',
+      createdAt: new Date().toISOString(),
+    };
+
+    // 1. Instant optimistic update in local state & localStorage
+    setWeddingData((prev) => {
+      const guestKey = cleanName.toLowerCase();
+      const existingIdx = prev.guests.findIndex((g) => g.name.toLowerCase().trim() === guestKey);
+      let updatedGuests: Guest[];
+
+      if (existingIdx >= 0) {
+        updatedGuests = prev.guests.map((g, idx) =>
+          idx === existingIdx
+            ? {
+                ...g,
+                rsvpStatus,
+                phone: rsvpPayload.phone || g.phone,
+                attendingPlusOnes: count - 1,
+                notes: rsvpPayload.notes || g.notes,
+                rsvpUpdatedAt: rsvpPayload.createdAt,
+              }
+            : g
+        );
+      } else {
+        const newGuest: Guest = {
+          id: rsvpPayload.id,
+          slug: cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `guest-${Date.now()}`,
+          name: cleanName,
+          phone: rsvpPayload.phone,
+          group: 'Special Guests',
+          allowedPlusOnes: count - 1,
+          attendingPlusOnes: count - 1,
+          useCustomMessage: false,
+          themeId: 'habesha-gold',
+          invitedEvents: ['church', 'reception'],
+          rsvpStatus,
+          notes: rsvpPayload.notes,
+          rsvpUpdatedAt: rsvpPayload.createdAt,
+        };
+        updatedGuests = [newGuest, ...prev.guests];
+      }
+
+      const updatedWeddingData = {
+        ...prev,
+        guests: updatedGuests,
+      };
+
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(updatedWeddingData));
+      } catch (e) {
+        console.warn('Local storage write warning:', e);
+      }
+
+      return updatedWeddingData;
+    });
+
+    // 2. Direct persistence to MongoDB via /api/rsvp
+    try {
+      const res = await fetch('/api/rsvp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(rsvpPayload),
+      });
+      const data = await res.json();
+      return data;
+    } catch (err) {
+      console.warn('RSVP MongoDB sync error, saved locally:', err);
+      return { success: true, source: 'local', rsvp: rsvpPayload };
+    }
+  };
+
   const addWish = (guestName: string, message: string) => {
     const newWish: WishMessage = {
       id: `w-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
@@ -510,6 +656,7 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateGuest,
         deleteGuest,
         submitGuestRsvp,
+        submitRsvpByName,
         addWish,
         updateWish,
         likeWish,
