@@ -288,7 +288,7 @@ export const WaxSealEnvelope: React.FC = () => {
                     Sunday, November 15, 2026
                   </p>
                   <p className="font-amharic text-[10px] sm:text-xs text-[#6e5824] mt-0.5">
-                    ልደታ መካነየሱስ ቤተክርስቲያን • አዲስ አበባ
+                    ልደታ መካነ ኢየሱስ ቤተክርስቲያን • አዲስ አበባ
                   </p>
                 </div>
               </motion.div>
