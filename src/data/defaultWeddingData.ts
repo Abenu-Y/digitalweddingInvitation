@@ -84,7 +84,7 @@ export const initialWeddingData: WeddingData = {
       tag: "የምሳ እና የደስታ መጋራት (Reception)",
       address: "📍አቃቂ አለም ባንክ እና ሙያ ቴክኒክ በስተግራ በሚወስደው መንገድ ወደታች ወረድ ብሎ፣ አዲስ አበባ",
       time: "ከ5:00 እስከ 8:30 (11:00 AM - 02:30 PM)",
-      imageUrl: "/images/ethiopian_wedding_2couple.jpg",
+      imageUrl: "/images/ES8A4798.JPG",
       googleMapsUrl: "https://maps.google.com/?q=Akaki+Alem+Bank+Addis+Ababa",
       eventType: "reception"
     },
@@ -317,5 +317,5 @@ export const initialWeddingData: WeddingData = {
   storyCardTransitionDuration: 0.75,
   storyCardAutoAdvance: true,
   storyCardPauseOnHover: true,
-  dataVersion: 5,
+  dataVersion: 6,
 };
