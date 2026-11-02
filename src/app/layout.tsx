@@ -6,29 +6,29 @@ export const metadata: Metadata = {
   title: "Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)",
   description: "You are invited to celebrate the holy matrimony and wedding of Hosni Mubarek & Eyerusalem Alemayehu at Lideta Mekane Yesus, Addis Ababa. እሑድ፣ ህዳር 6፣ 2019 ዓ.ም (November 15, 2026).",
   keywords: ["Hosni and Eyerusalem", "Hosni & Jerry", "Wedding Invitation", "Yene Serg", "Habesha Wedding", "Ethiopian Wedding", "ልደታ መካነየሱስ"],
-  metadataBase: new URL('https://opentheinvite.vercel.app'),
+  metadataBase: new URL('https://hosniandjerry.vercel.app'),
   alternates: {
-    canonical: 'https://opentheinvite.vercel.app',
+    canonical: 'https://hosniandjerry.vercel.app',
   },
   openGraph: {
     title: "Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)",
     description: "You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation.",
-    url: 'https://opentheinvite.vercel.app',
+    url: 'https://hosniandjerry.vercel.app',
     siteName: 'Hosni & Eyerusalem Wedding Invitation',
     locale: 'am_ET',
     type: "website",
     images: [
       {
-        url: "/ES8A4319.JPG",
-        secureUrl: "https://opentheinvite.vercel.app/ES8A4319.JPG",
+        url: "/ES8A4319.JPG?v=7",
+        secureUrl: "https://hosniandjerry.vercel.app/ES8A4319.JPG?v=7",
         width: 1200,
         height: 630,
         type: "image/jpeg",
         alt: "Hosni & Eyerusalem Royal Wedding Celebration",
       },
       {
-        url: "/og-image.jpg",
-        secureUrl: "https://opentheinvite.vercel.app/og-image.jpg",
+        url: "/og-image.jpg?v=7",
+        secureUrl: "https://hosniandjerry.vercel.app/og-image.jpg?v=7",
         width: 1200,
         height: 630,
         type: "image/jpeg",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)",
     description: "You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation.",
-    images: ["https://opentheinvite.vercel.app/ES8A4319.JPG"],
+    images: ["https://hosniandjerry.vercel.app/ES8A4319.JPG?v=7"],
   },
   icons: {
     icon: [
@@ -94,17 +94,17 @@ export default function RootLayout({
         {/* Explicit OpenGraph & Social Share Meta for WhatsApp, Telegram, and Social Networks */}
         <meta property="og:title" content="Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)" />
         <meta property="og:description" content="You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation." />
-        <meta property="og:image" content="https://opentheinvite.vercel.app/ES8A4319.JPG" />
-        <meta property="og:image:secure_url" content="https://opentheinvite.vercel.app/ES8A4319.JPG" />
+        <meta property="og:image" content="https://hosniandjerry.vercel.app/ES8A4319.JPG?v=7" />
+        <meta property="og:image:secure_url" content="https://hosniandjerry.vercel.app/ES8A4319.JPG?v=7" />
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:url" content="https://opentheinvite.vercel.app/" />
+        <meta property="og:url" content="https://hosniandjerry.vercel.app/" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)" />
         <meta name="twitter:description" content="You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation." />
-        <meta name="twitter:image" content="https://opentheinvite.vercel.app/ES8A4319.JPG" />
+        <meta name="twitter:image" content="https://hosniandjerry.vercel.app/ES8A4319.JPG?v=7" />
       </head>
       <body
         className="font-sans antialiased bg-[#051812] text-[#fef3c7] min-h-screen selection:bg-[#d4af37]/30 selection:text-amber-200"
