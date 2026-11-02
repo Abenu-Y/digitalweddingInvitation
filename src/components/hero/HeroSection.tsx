@@ -80,7 +80,7 @@ END:VCALENDAR`;
       {/* Background Hero Image with Deep Luxury Gradient Overlays */}
       <div className="absolute inset-0 z-0">
         <div
-          className="absolute inset-0 bg-cover bg-center filter brightness-[0.35] scale-105 transition-transform duration-10000"
+          className="absolute inset-0 bg-cover bg-center filter brightness-[0.35] scale-10 transition-transform duration-10000"
           style={{ backgroundImage: `url(${weddingData.heroImageUrl})` }}
         />
         <div

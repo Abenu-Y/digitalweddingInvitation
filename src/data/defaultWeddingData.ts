@@ -30,8 +30,9 @@ export const initialWeddingData: WeddingData = {
   backgroundMusicUrl: "/G&B wedding (6).mp3",
   backgroundMusicTitle: "Hosni & Eyerusalem Royal Melody (የሰርግ ዜማ)",
 
-  heroImageUrl: "/images/hero.JPG",
+  heroImageUrl: "/images/ethiopian_wedding_couple.JPG",
   coupleAvatarUrl: "/images/ethiopian_couple_holding_hands.jpg",
+
 
   dressCode: {
     title: "Habesha Royal Elegance & Formal Attire",

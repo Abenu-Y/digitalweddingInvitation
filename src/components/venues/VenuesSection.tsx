@@ -60,7 +60,7 @@ export const VenuesSection: React.FC = () => {
               {/* Venue Image */}
               <div className="relative h-48 sm:h-56 overflow-hidden">
                 <div
-                  className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700 filter brightness-90"
+                  className="absolute inset-0 bg-cover bg-center group-hover:scale-10 transition-transform duration-700 filter brightness-90"
                   style={{ backgroundImage: `url(${venue.imageUrl})` }}
                 />
                 <div
