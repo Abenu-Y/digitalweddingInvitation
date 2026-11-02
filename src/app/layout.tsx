@@ -6,21 +6,21 @@ export const metadata: Metadata = {
   title: "Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)",
   description: "You are invited to celebrate the holy matrimony and wedding of Hosni Mubarek & Eyerusalem Alemayehu at Lideta Mekane Yesus, Addis Ababa. እሑድ፣ ህዳር 6፣ 2019 ዓ.ም (November 15, 2026).",
   keywords: ["Hosni and Eyerusalem", "Hosni & Jerry", "Wedding Invitation", "Yene Serg", "Habesha Wedding", "Ethiopian Wedding", "ልደታ መካነየሱስ"],
-  metadataBase: new URL('https://hosniandjerry.vercel.app'),
+  metadataBase: new URL('https://opentheinvite.vercel.app'),
   alternates: {
-    canonical: 'https://hosniandjerry.vercel.app',
+    canonical: 'https://opentheinvite.vercel.app',
   },
   openGraph: {
     title: "Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)",
     description: "You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation.",
-    url: 'https://hosniandjerry.vercel.app',
+    url: 'https://opentheinvite.vercel.app',
     siteName: 'Hosni & Eyerusalem Wedding Invitation',
     locale: 'am_ET',
     type: "website",
     images: [
       {
-        url: "/hero2.JPG",
-        secureUrl: "https://hosniandjerry.vercel.app/hero2.JPG",
+        url: "/og-image.jpg",
+        secureUrl: "https://opentheinvite.vercel.app/og-image.jpg",
         width: 1200,
         height: 630,
         type: "image/jpeg",
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)",
     description: "You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation.",
-    images: ["https://hosniandjerry.vercel.app/hero2.JPG"],
+    images: ["https://opentheinvite.vercel.app/og-image.jpg"],
   },
   icons: {
     icon: [
@@ -86,17 +86,17 @@ export default function RootLayout({
         {/* Explicit OpenGraph & Social Share Meta for WhatsApp, Telegram, and Social Networks */}
         <meta property="og:title" content="Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)" />
         <meta property="og:description" content="You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation." />
-        <meta property="og:image" content="https://hosniandjerry.vercel.app/hero2.JPG" />
-        <meta property="og:image:secure_url" content="https://hosniandjerry.vercel.app/hero2.JPG" />
+        <meta property="og:image" content="https://opentheinvite.vercel.app/og-image.jpg" />
+        <meta property="og:image:secure_url" content="https://opentheinvite.vercel.app/og-image.jpg" />
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
-        <meta property="og:url" content="https://hosniandjerry.vercel.app/" />
+        <meta property="og:url" content="https://opentheinvite.vercel.app/" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)" />
         <meta name="twitter:description" content="You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation." />
-        <meta name="twitter:image" content="https://hosniandjerry.vercel.app/hero2.JPG" />
+        <meta name="twitter:image" content="https://opentheinvite.vercel.app/og-image.jpg" />
       </head>
       <body
         className="font-sans antialiased bg-[#051812] text-[#fef3c7] min-h-screen selection:bg-[#d4af37]/30 selection:text-amber-200"
