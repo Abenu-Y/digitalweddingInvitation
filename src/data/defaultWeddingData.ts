@@ -22,9 +22,9 @@ export const initialWeddingData: WeddingData = {
   quoteSource: "መዝሙረ ዳዊት 13:5 | Psalm 13:5",
 
   globalInvitationMessage:
-    "We would be honored to have you join us on this beautiful occasion and share in our happiness. Your presence and blessings will mean a lot to us. With love and warm regards,",
+    "God willing, we will celebrate our wedding ceremony at Lideta Mekane Yesus Church, and we would be truly happy to have you join us on this special and joyful day. We warmly invite you to celebrate this beautiful moment with us! ❤️",
   globalInvitationMessageAmharic:
-    "በዚህ ውብ እና የተቀደሰ ቀን አብረውን በመሆን ደስታችንን እንድትጋሩ በታላቅ ክብር እንጋብዝዎታለን። መገኘትዎ እና ምርቃትዎ ለእኛ ትልቅ ዋጋ አለው። በፍቅር እና በአክብሮት፣",
+    "እግዚአብሔር ቢፈቅድ የጋብቻችንን ስነ ስርዓት  በልደታ መካነ ኢየሱስ ቤተክርስቲያን የምንፈጽም ስለሆነ በዕለቱ ተገኝተው የደስታችን ተካፋይ እንዲሆኑ በአክብሮት ጠርተነዎታል ።",
 
   defaultTheme: "habesha-gold",
   backgroundMusicUrl: "/G&B wedding (6).mp3",

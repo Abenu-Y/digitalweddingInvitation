@@ -14,12 +14,17 @@ export const ScrollLockedStoryCard: React.FC = () => {
 
   const [activeSlide, setActiveSlide] = useState<number>(0);
   const [slideDirection, setSlideDirection] = useState<number>(1);
+  const [isHovered, setIsHovered] = useState<boolean>(false);
 
-  // Transition lock to prevent scroll momentum from skipping multiple cards
+  // Transition lock and momentum cooldown guards
   const isTransitioning = useRef<boolean>(false);
   const transitionTimeout = useRef<NodeJS.Timeout | null>(null);
+  const cooldownUntil = useRef<number>(0);
   const activeSlideRef = useRef<number>(0);
   activeSlideRef.current = activeSlide;
+
+  // Track 100% full view entry state
+  const hasArrivedAt100 = useRef<boolean>(false);
 
   const slides = [
     {
@@ -86,115 +91,200 @@ export const ScrollLockedStoryCard: React.FC = () => {
     setActiveSlide(targetIndex);
 
     isTransitioning.current = true;
+    cooldownUntil.current = Date.now() + 480;
+
     if (transitionTimeout.current) clearTimeout(transitionTimeout.current);
     transitionTimeout.current = setTimeout(() => {
       isTransitioning.current = false;
     }, 450);
   }, []);
 
-  const handlePrev = (e?: React.MouseEvent) => {
+  const handlePrev = useCallback((e?: React.MouseEvent) => {
     if (e) {
       e.preventDefault();
       e.stopPropagation();
     }
-    const prevIndex = (activeSlideRef.current - 1 + slides.length) % slides.length;
-    goToSlide(prevIndex, -1);
-  };
-
-  const handleNext = (e?: React.MouseEvent) => {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    const nextIndex = (activeSlideRef.current + 1) % slides.length;
-    goToSlide(nextIndex, 1);
-  };
-
-  /**
-   * Precision Wheel Scroll Interception:
-   * When user is focused on the story card section:
-   * - Scrolling down steps sequentially: Card 01 -> Card 02 -> Card 03.
-   * - On Card 03, continuing to scroll down releases control and flows to the Countdown section.
-   * - Scrolling up steps sequentially: Card 03 -> Card 02 -> Card 01.
-   * - On Card 01, continuing to scroll up releases control and flows up to the Hero section.
-   */
-  useEffect(() => {
     const sectionEl = sectionRef.current;
-    if (!sectionEl) return;
+    if (sectionEl) {
+      const sectionTop = window.scrollY + sectionEl.getBoundingClientRect().top;
+      window.scrollTo({ top: sectionTop, behavior: 'smooth' });
+    }
+    const current = activeSlideRef.current;
+    const prevIndex = (current - 1 + slides.length) % slides.length;
+    goToSlide(prevIndex, -1);
+  }, [goToSlide, slides.length]);
 
-    const handleWheel = (e: WheelEvent) => {
-      const rect = sectionEl.getBoundingClientRect();
-      const windowH = window.innerHeight;
-
-      // Check if the story card is prominently centered in the viewport
-      const isCardCentered = rect.top <= windowH * 0.4 && rect.bottom >= windowH * 0.6;
-      if (!isCardCentered) return;
-
-      const delta = e.deltaY;
-      // Filter out micro-scroll twitches
-      if (Math.abs(delta) < 18) return;
-
-      const current = activeSlideRef.current;
-
-      if (delta > 0) {
-        // Scrolling Down
-        if (current < slides.length - 1) {
-          // Lock scroll and advance to next card
-          e.preventDefault();
-          if (!isTransitioning.current) {
-            goToSlide(current + 1, 1);
-          }
-        }
-        // If already on the last card (Card 03), natural page scroll proceeds to countdown
-      } else {
-        // Scrolling Up
-        if (current > 0) {
-          // Lock scroll and step to previous card
-          e.preventDefault();
-          if (!isTransitioning.current) {
-            goToSlide(current - 1, -1);
-          }
-        }
-        // If already on the first card (Card 01), natural page scroll proceeds to hero
-      }
-    };
-
-    // Use non-passive wheel listener to allow intentional card progression
-    sectionEl.addEventListener('wheel', handleWheel, { passive: false });
-
-    return () => {
-      sectionEl.removeEventListener('wheel', handleWheel);
-      if (transitionTimeout.current) clearTimeout(transitionTimeout.current);
-    };
+  const handleNext = useCallback((e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    const sectionEl = sectionRef.current;
+    if (sectionEl) {
+      const sectionTop = window.scrollY + sectionEl.getBoundingClientRect().top;
+      window.scrollTo({ top: sectionTop, behavior: 'smooth' });
+    }
+    const current = activeSlideRef.current;
+    const nextIndex = (current + 1) % slides.length;
+    goToSlide(nextIndex, 1);
   }, [goToSlide, slides.length]);
 
   /**
-   * When scrolling up from below (countdown/schedule), detect entrance from bottom
-   * and prime Card 03 as the starting card so reverse scrolling is 100% natural.
+   * 100% View Scroll-Locked Sequential Progression:
+   * 1. Scrolling down from top (Hero):
+   *    - Natural page scroll continues freely until the section is 100% in view.
+   *    - Once 100% viewed, it locks at 100% view on Card 01 (Save The Date).
+   *    - First scroll down advances to Card 02 (while staying 100% on this section).
+   *    - Second scroll down advances to Card 03 (while staying 100% on this section).
+   *    - Third scroll down on Card 03 releases lock and flows naturally down to Countdown.
+   *
+   * 2. Scrolling back up from below (Countdown):
+   *    - Natural page scroll continues freely until the section is 100% in view.
+   *    - Once 100% viewed, it locks at 100% view on Card 03 (Ethiopian Calendar).
+   *    - First scroll up steps to Card 02 (while staying 100% on this section).
+   *    - Second scroll up steps to Card 01 (while staying 100% on this section).
+   *    - Third scroll up on Card 01 releases lock and flows naturally up to Hero.
    */
   useEffect(() => {
-    let lastY = window.scrollY;
+    let lastScrollY = window.scrollY;
 
     const handleScrollTracking = () => {
-      if (!sectionRef.current) return;
-      const rect = sectionRef.current.getBoundingClientRect();
+      const sectionEl = sectionRef.current;
+      if (!sectionEl) return;
+      const rect = sectionEl.getBoundingClientRect();
       const windowH = window.innerHeight;
       const currentY = window.scrollY;
-      const scrollingUp = currentY < lastY;
-      lastY = currentY;
+      const scrollingUp = currentY < lastScrollY;
+      lastScrollY = currentY;
 
-      // If scrolling up from below and entering the card section
-      if (scrollingUp && rect.bottom <= windowH + 100 && rect.bottom >= windowH * 0.7) {
-        if (activeSlideRef.current === 0) {
+      // While scrolling down from above (in Hero section)
+      if (!scrollingUp && rect.top > windowH * 0.3) {
+        hasArrivedAt100.current = false;
+        if (activeSlideRef.current !== 0) {
+          activeSlideRef.current = 0;
+          setActiveSlide(0);
+          setSlideDirection(1);
+        }
+      }
+      // While scrolling up from below (in Countdown / Schedule sections)
+      else if (scrollingUp && rect.bottom < windowH * 0.7) {
+        hasArrivedAt100.current = false;
+        if (activeSlideRef.current !== slides.length - 1) {
+          activeSlideRef.current = slides.length - 1;
           setActiveSlide(slides.length - 1);
           setSlideDirection(-1);
         }
       }
     };
 
+    const handleWheel = (e: WheelEvent) => {
+      const sectionEl = sectionRef.current;
+      if (!sectionEl) return;
+
+      const rect = sectionEl.getBoundingClientRect();
+      const windowH = window.innerHeight;
+      const sectionTop = window.scrollY + rect.top;
+      const deltaY = e.deltaY;
+
+      if (Math.abs(deltaY) < 14) return; // Ignore micro-jitters
+
+      const current = activeSlideRef.current;
+      const now = Date.now();
+
+      // Check if section is 100% in view (aligned at top or covering the viewport)
+      const is100PercentInView = Math.abs(rect.top) <= 30 || (rect.top <= 20 && rect.bottom >= windowH - 20);
+
+      // 1. If NOT 100% in view yet:
+      if (!is100PercentInView) {
+        hasArrivedAt100.current = false;
+
+        // When approaching from above (Hero), ensure Card 01 is primed
+        if (rect.top > 30 && current !== 0) {
+          activeSlideRef.current = 0;
+          setActiveSlide(0);
+        }
+        // When approaching from below (Countdown), ensure Card 03 is primed
+        if (rect.top < -30 && current !== slides.length - 1) {
+          activeSlideRef.current = slides.length - 1;
+          setActiveSlide(slides.length - 1);
+        }
+
+        // Natural browser scroll brings the section into 100% view freely
+        return;
+      }
+
+      // 2. The section IS 100% in view!
+      // If we just entered 100% view from natural scroll:
+      // Lock scroll position at 100% view and absorb entrance momentum so the starting card is not skipped!
+      if (!hasArrivedAt100.current) {
+        hasArrivedAt100.current = true;
+        window.scrollTo({ top: sectionTop, behavior: 'instant' });
+        cooldownUntil.current = now + 480;
+        e.preventDefault();
+        return;
+      }
+
+      // 3. If currently in transition or arrival cooldown:
+      // Keep section locked at 100% view and absorb scroll events
+      if (now < cooldownUntil.current || isTransitioning.current) {
+        e.preventDefault();
+        window.scrollTo({ top: sectionTop, behavior: 'instant' });
+        return;
+      }
+
+      // 4. Intentional user scroll while staying 100% on this section:
+      if (deltaY > 0) {
+        // Scrolling DOWN
+        if (current < slides.length - 1) {
+          // Stay locked at 100% view of this section and advance: Card 01 -> Card 02 -> Card 03
+          e.preventDefault();
+          window.scrollTo({ top: sectionTop, behavior: 'instant' });
+          goToSlide(current + 1, 1);
+        } else {
+          // Already on Card 03 (last card): release lock and allow natural scroll to countdown
+          hasArrivedAt100.current = false;
+        }
+      } else {
+        // Scrolling UP
+        if (current > 0) {
+          // Stay locked at 100% view of this section and step back: Card 03 -> Card 02 -> Card 01
+          e.preventDefault();
+          window.scrollTo({ top: sectionTop, behavior: 'instant' });
+          goToSlide(current - 1, -1);
+        } else {
+          // Already on Card 01 (first card): release lock and allow natural scroll to hero
+          hasArrivedAt100.current = false;
+        }
+      }
+    };
+
     window.addEventListener('scroll', handleScrollTracking, { passive: true });
-    return () => window.removeEventListener('scroll', handleScrollTracking);
-  }, [slides.length]);
+    window.addEventListener('wheel', handleWheel, { passive: false });
+
+    return () => {
+      window.removeEventListener('scroll', handleScrollTracking);
+      window.removeEventListener('wheel', handleWheel);
+      if (transitionTimeout.current) clearTimeout(transitionTimeout.current);
+    };
+  }, [goToSlide, slides.length]);
+
+  // Optional auto-advance configured via admin settings (rotates smoothly if enabled)
+  const autoAdvance = weddingData.storyCardAutoAdvance ?? false;
+  const durationSec = weddingData.storyCardDurationSeconds ?? 12;
+  const pauseOnHover = weddingData.storyCardPauseOnHover ?? true;
+
+  useEffect(() => {
+    if (!autoAdvance) return;
+    const interval = setInterval(() => {
+      if (isHovered && pauseOnHover) return;
+      if (!isTransitioning.current) {
+        const nextIndex = (activeSlideRef.current + 1) % slides.length;
+        goToSlide(nextIndex, 1);
+      }
+    }, durationSec * 1000);
+
+    return () => clearInterval(interval);
+  }, [autoAdvance, durationSec, isHovered, pauseOnHover, goToSlide, slides.length]);
 
   // Touch Gestures: supports both vertical scrolling gestures and horizontal swipes
   const touchStartY = useRef<number | null>(null);
@@ -207,6 +297,8 @@ export const ScrollLockedStoryCard: React.FC = () => {
 
   const handleTouchEnd = (e: React.TouchEvent) => {
     if (touchStartY.current === null || touchStartX.current === null) return;
+    const sectionEl = sectionRef.current;
+    if (!sectionEl) return;
 
     const touchEndY = e.changedTouches[0].clientY;
     const touchEndX = e.changedTouches[0].clientX;
@@ -215,27 +307,33 @@ export const ScrollLockedStoryCard: React.FC = () => {
     const deltaX = touchStartX.current - touchEndX;
 
     const current = activeSlideRef.current;
+    const rect = sectionEl.getBoundingClientRect();
+    const windowH = window.innerHeight;
+    const sectionTop = window.scrollY + rect.top;
 
-    // Horizontal swipe takes precedence if clear horizontal intent
+    // Horizontal swipe takes precedence for switching cards
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 40) {
       if (deltaX > 0) {
-        // Swiped left -> next card
         handleNext();
       } else {
-        // Swiped right -> previous card
         handlePrev();
       }
-    } else if (Math.abs(deltaY) > 50) {
-      // Vertical swipe gesture on mobile
-      if (deltaY > 0) {
-        // Swiped up (scrolling down)
-        if (current < slides.length - 1 && !isTransitioning.current) {
-          goToSlide(current + 1, 1);
-        }
-      } else {
-        // Swiped down (scrolling up)
-        if (current > 0 && !isTransitioning.current) {
-          goToSlide(current - 1, -1);
+    } else if (Math.abs(deltaY) > 45) {
+      // Vertical swipe: only step cards if section is 100% viewed
+      const is100PercentInView = Math.abs(rect.top) <= 35 || (rect.top <= 20 && rect.bottom >= windowH - 20);
+      if (is100PercentInView) {
+        if (deltaY > 0) {
+          // Swiped up (scroll down)
+          if (current < slides.length - 1 && !isTransitioning.current) {
+            window.scrollTo({ top: sectionTop, behavior: 'smooth' });
+            goToSlide(current + 1, 1);
+          }
+        } else {
+          // Swiped down (scroll up)
+          if (current > 0 && !isTransitioning.current) {
+            window.scrollTo({ top: sectionTop, behavior: 'smooth' });
+            goToSlide(current - 1, -1);
+          }
         }
       }
     }
@@ -292,8 +390,10 @@ export const ScrollLockedStoryCard: React.FC = () => {
   return (
     <section
       ref={sectionRef}
-      id="invitation-story"
-      className="relative w-full min-h-[92vh] sm:min-h-screen py-8 sm:py-16 flex flex-col items-center justify-center px-3 sm:px-6 overflow-hidden select-none"
+      id="invitation"
+      className="relative w-full min-h-screen py-8 sm:py-12 flex flex-col items-center justify-center px-3 sm:px-6 overflow-hidden select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Ambient luxury gold/emerald background glow */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[550px] h-[550px] bg-[#0a3a2a]/30 blur-[130px] rounded-full pointer-events-none" />
@@ -311,7 +411,14 @@ export const ScrollLockedStoryCard: React.FC = () => {
               <button
                 key={idx}
                 type="button"
-                onClick={() => goToSlide(idx, idx > activeSlide ? 1 : -1)}
+                onClick={() => {
+                  const sectionEl = sectionRef.current;
+                  if (sectionEl) {
+                    const sectionTop = window.scrollY + sectionEl.getBoundingClientRect().top;
+                    window.scrollTo({ top: sectionTop, behavior: 'smooth' });
+                  }
+                  goToSlide(idx, idx > activeSlide ? 1 : -1);
+                }}
                 className="h-1.5 flex-1 rounded-full cursor-pointer overflow-hidden bg-black/60 border border-white/10 transition-all hover:border-amber-400/50"
                 title={`Jump to card ${idx + 1}`}
                 aria-label={`Jump to card ${idx + 1}`}
@@ -426,7 +533,14 @@ export const ScrollLockedStoryCard: React.FC = () => {
             <button
               key={s.id}
               type="button"
-              onClick={() => goToSlide(idx, idx > activeSlide ? 1 : -1)}
+              onClick={() => {
+                const sectionEl = sectionRef.current;
+                if (sectionEl) {
+                  const sectionTop = window.scrollY + sectionEl.getBoundingClientRect().top;
+                  window.scrollTo({ top: sectionTop, behavior: 'smooth' });
+                }
+                goToSlide(idx, idx > activeSlide ? 1 : -1);
+              }}
               style={
                 activeSlide === idx
                   ? {
