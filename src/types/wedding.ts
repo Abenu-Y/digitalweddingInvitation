@@ -66,6 +66,7 @@ export interface VenueItem {
   address: string;
   time: string;
   imageUrl: string;
+  imagePosition?: string;
   googleMapsUrl: string;
   coordinates?: { lat: number; lng: number };
   eventType?: EventType;

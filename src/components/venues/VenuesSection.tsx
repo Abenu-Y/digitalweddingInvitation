@@ -62,16 +62,19 @@ export const VenuesSection: React.FC = () => {
               className="rounded-2xl overflow-hidden border shadow-2xl flex flex-col group transition-all"
             >
               {/* Venue Image */}
-              <div className="relative h-48 sm:h-56 overflow-hidden">
+              <div className="relative h-72 sm:h-80 md:h-96 overflow-hidden">
                 <div
-                  className="absolute inset-0 bg-cover bg-[center_20%] group-hover:scale-105 transition-transform duration-700 filter brightness-90"
-                  style={{ backgroundImage: `url(${venue.imageUrl})` }}
+                  className="absolute inset-0 bg-cover group-hover:scale-105 transition-transform duration-700"
+                  style={{
+                    backgroundImage: `url(${venue.imageUrl})`,
+                    backgroundPosition: venue.imagePosition || 'center 65%',
+                  }}
                 />
                 <div
                   style={{
-                    background: `linear-gradient(to top, ${activeTheme.cardBgHex} 0%, transparent 60%, rgba(0,0,0,0.4) 100%)`,
+                    background: `linear-gradient(to top, ${activeTheme.cardBgHex} 0%, ${activeTheme.cardBgHex}60 12%, transparent 28%)`,
                   }}
-                  className="absolute inset-0"
+                  className="absolute inset-0 pointer-events-none"
                 />
                 
                 {/* Event Tag */}
@@ -148,7 +151,7 @@ export const VenuesSection: React.FC = () => {
               borderColor: activeTheme.cardBorderHex,
               boxShadow: `0 20px 45px rgba(0,0,0,0.7), 0 0 20px ${activeTheme.glowColor}`,
             }}
-            className={`rounded-2xl overflow-hidden border shadow-2xl flex flex-col min-h-[420px] relative group transition-all ${
+            className={`rounded-2xl overflow-hidden border shadow-2xl flex flex-col min-h-[460px] lg:min-h-full relative group transition-all ${
               visibleVenues.length > 1 ? 'lg:col-span-2' : ''
             }`}
           >

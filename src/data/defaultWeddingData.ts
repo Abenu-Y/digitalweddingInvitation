@@ -15,7 +15,7 @@ export const initialWeddingData: WeddingData = {
 
   weddingDate: "2026-11-15T15:00:00",
   weddingDateAmharic: "እሑድ፣ ህዳር 6፣ 2019 ዓ.ም (ከ9:00 እስከ 12:00)",
-  weddingLocationCity: "ልደታ መካነየሱስ፣ አዲስ አበባ (Addis Ababa)",
+  weddingLocationCity: "ልደታ መካነ ኢየሱስ፣ አዲስ አበባ (Addis Ababa)",
 
   religiousQuote: "But I trust in your unfailing love; my heart rejoices in your salvation.",
   religiousQuoteAmharic: "እኔ ግን በቸርነትህ ታመንሁ፥ ልቤም በመድኃኒትህ ደስ ይለዋል።",
@@ -70,7 +70,7 @@ export const initialWeddingData: WeddingData = {
       title: "Holy Matrimony & Worship Ceremony",
       titleAmharic: "የቃልኪዳን እና የአምልኮ ጊዜ",
       description: "በእግዚአብሔር ፊት የጋብቻ ቃልኪዳን መፈጸምና የምስጋና አምልኮ ሥነ-ሥርዓት።",
-      location: "ልደታ መካነየሱስ (ከዲአፍሪክ ሆቴል ወረድ ብሎ አምስተኛ ፖሊስ ጣቢያ)",
+      location: "ልደታ መካነ ኢየሱስ (ከዲአፍሪክ ሆቴል ወረድ ብሎ አምስተኛ ፖሊስ ጣቢያ)",
       icon: "Church",
       eventType: "church"
     }
@@ -82,20 +82,22 @@ export const initialWeddingData: WeddingData = {
       name: "Wedding Reception & Lunch",
       nameAmharic: "የምሳ ፕሮግራም",
       tag: "የምሳ እና የደስታ መጋራት (Reception)",
-      address: "📍አቃቂ አለም ባንክ እና ሙያ ቴክኒክ በስተግራ በሚወስደው መንገድ ወደታች ወረድ ብሎ፣ አዲስ አበባ",
+      address: "📍አቃቂ አለም ባንክ ፡ አቃቂ ቴክኒክ እና ሙያ አደባባይ በስተግራ በሚወስደው መንገድ ወደታች ወረድ ብሎ",
       time: "ከ5:00 እስከ 8:30 (11:00 AM - 02:30 PM)",
       imageUrl: "/images/ES8A4798.JPG",
+      imagePosition: "center 68%",
       googleMapsUrl: "https://maps.google.com/?q=Akaki+Alem+Bank+Addis+Ababa",
       eventType: "reception"
     },
     {
       id: "ven-2",
       name: "Lideta Mekane Yesus Church",
-      nameAmharic: "ልደታ መካነየሱስ",
+      nameAmharic: "ልደታ መካነ ኢየሱስ",
       tag: "የቃልኪዳን እና የአምልኮ ጊዜ (Ceremony)",
       address: "📍ከዲአፍሪክ ሆቴል ወረድ ብሎ አምስተኛ ፖሊስ ጣቢያ አካባቢ፣ አዲስአበባ, ኢትዮጵያ",
       time: "ከ9:00 እስከ 12:00 (03:00 PM - 06:00 PM)",
-      imageUrl: "/images/ethiopian_couple_holding_hands.jpg",
+      imageUrl: "/images/ethiopian_couple_holding_hands.JPG",
+      imagePosition: "center 65%",
       googleMapsUrl: "https://maps.google.com/?q=Lideta+Mekane+Yesus+Church+Addis+Ababa",
       coordinates: { lat: 9.0125, lng: 38.7410 },
       eventType: "church"
@@ -317,5 +319,5 @@ export const initialWeddingData: WeddingData = {
   storyCardTransitionDuration: 0.75,
   storyCardAutoAdvance: true,
   storyCardPauseOnHover: true,
-  dataVersion: 6,
+  dataVersion: 7,
 };
