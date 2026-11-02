@@ -40,7 +40,8 @@ export const initialWeddingData: WeddingData = {
     description: "We would be delighted to see our esteemed guests adorned in modern Habesha Kemis / Tilfi tibeb or elegant formal black-tie attire reflecting gold and royal jewel tones.",
     colors: [
       { name: "Royal Gold (ወርቃማ)", hex: "#D4AF37" },
-      { name: "Deep Emerald (አረንጓዴ)", hex: "#064E3B" },
+      { name: "Deep Emerald (አረንጓዴ)", hex: "#A4BE5C" },
+      // { name: "Deep Emerald (አረንጓዴ)", hex: "#064E3B" },
       { name: "Warm Champagne (ሻምፓኝ)", hex: "#F3E8D2" },
       { name: "Pure Ivory White (ነጭ)", hex: "#FDFBF7" },
       { name: "Velvet Burgundy (ቡርጉንዲ)", hex: "#4A0E17" }
