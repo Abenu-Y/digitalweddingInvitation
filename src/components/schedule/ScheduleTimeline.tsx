@@ -15,7 +15,9 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export const ScheduleTimeline: React.FC = () => {
-  const { weddingData, language, activeTheme, currentGuest } = useWedding();
+  const { weddingData, language, activeTheme, isEventAllowed } = useWedding();
+
+  const visibleSchedule = weddingData.schedule.filter((item) => isEventAllowed(item.eventType));
 
   return (
     <section id="schedule" className="py-20 px-4 sm:px-6 relative">
@@ -49,10 +51,9 @@ export const ScheduleTimeline: React.FC = () => {
           />
 
           <div className="space-y-8 sm:space-y-12">
-            {weddingData.schedule.map((item, index) => {
+            {visibleSchedule.map((item, index) => {
               const IconComponent = iconMap[item.icon] || Clock;
               const isEven = index % 2 === 0;
-              const isInvited = !currentGuest || !currentGuest.invitedEvents || currentGuest.invitedEvents.includes(item.eventType);
 
               return (
                 <motion.div
@@ -73,9 +74,7 @@ export const ScheduleTimeline: React.FC = () => {
                         borderColor: activeTheme.cardBorderHex,
                         boxShadow: `0 15px 35px rgba(0,0,0,0.6), 0 0 15px ${activeTheme.glowColor}`,
                       }}
-                      className={`p-5 sm:p-6 rounded-2xl border backdrop-blur-md transition-all ${
-                        !isInvited ? 'opacity-50' : ''
-                      }`}
+                      className="p-5 sm:p-6 rounded-2xl border backdrop-blur-md transition-all hover:border-amber-400/50"
                     >
                       {/* Time Badge */}
                       <div

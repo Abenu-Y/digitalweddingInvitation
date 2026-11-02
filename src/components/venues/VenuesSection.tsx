@@ -6,7 +6,11 @@ import { useWedding } from '@/context/WeddingContext';
 import { MapPin, Navigation, Clock, ExternalLink } from 'lucide-react';
 
 export const VenuesSection: React.FC = () => {
-  const { weddingData, language, activeTheme } = useWedding();
+  const { weddingData, language, activeTheme, isEventAllowed } = useWedding();
+
+  const visibleVenues = weddingData.venues.filter((venue) => 
+    !venue.eventType || isEventAllowed(venue.eventType)
+  );
 
   return (
     <section id="venues" className="py-20 px-4 sm:px-6 relative bg-black/40">
@@ -42,8 +46,8 @@ export const VenuesSection: React.FC = () => {
         </div>
 
         {/* Venues & Live Google Map Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
-          {weddingData.venues.map((venue, idx) => (
+        <div className={`grid gap-8 items-stretch ${visibleVenues.length === 1 ? 'max-w-xl mx-auto w-full' : 'grid-cols-1 lg:grid-cols-2'}`}>
+          {visibleVenues.map((venue, idx) => (
             <motion.div
               key={venue.id}
               initial={{ opacity: 0, y: 30 }}
@@ -60,7 +64,7 @@ export const VenuesSection: React.FC = () => {
               {/* Venue Image */}
               <div className="relative h-48 sm:h-56 overflow-hidden">
                 <div
-                  className="absolute inset-0 bg-cover bg-center group-hover:scale-10 transition-transform duration-700 filter brightness-90"
+                  className="absolute inset-0 bg-cover bg-center group-hover:scale-105 transition-transform duration-700 filter brightness-90"
                   style={{ backgroundImage: `url(${venue.imageUrl})` }}
                 />
                 <div

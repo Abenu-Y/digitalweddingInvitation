@@ -68,6 +68,7 @@ export interface VenueItem {
   imageUrl: string;
   googleMapsUrl: string;
   coordinates?: { lat: number; lng: number };
+  eventType?: EventType;
 }
 
 export interface BankAccount {

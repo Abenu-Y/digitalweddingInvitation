@@ -80,18 +80,18 @@ END:VCALENDAR`;
       {/* Background Hero Image with Deep Luxury Gradient Overlays */}
       <div className="absolute inset-0 z-0">
         <div
-          className="absolute inset-0 bg-cover bg-center filter brightness-[0.35] scale-10 transition-transform duration-10000"
-          style={{ backgroundImage: `url(${weddingData.heroImageUrl})` }}
+          className="absolute inset-0 bg-cover bg-center filter brightness-[0.70] scale-105 transition-transform duration-10000"
+          style={{ backgroundImage: `url(${weddingData.heroImageUrl || '/images/ethiopian_wedding_couple.JPG'})` }}
         />
         <div
           style={{
-            background: `linear-gradient(to top, ${activeTheme.cardBgHex}fb 0%, ${activeTheme.cardBgHex}a6 50%, ${activeTheme.cardBgHex}80 100%)`,
+            background: `linear-gradient(to top, ${activeTheme.cardBgHex}ea 0%, ${activeTheme.cardBgHex}55 50%, ${activeTheme.cardBgHex}88 100%)`,
           }}
           className="absolute inset-0"
         />
         <div
           style={{
-            background: `radial-gradient(ellipse at center, transparent 0%, ${activeTheme.cardBgHex}88 65%, ${activeTheme.cardBgHex}f0 100%)`,
+            background: `radial-gradient(ellipse at center, transparent 20%, ${activeTheme.cardBgHex}40 60%, ${activeTheme.cardBgHex}cc 100%)`,
           }}
           className="absolute inset-0"
         />

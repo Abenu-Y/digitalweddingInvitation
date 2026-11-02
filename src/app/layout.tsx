@@ -19,6 +19,14 @@ export const metadata: Metadata = {
     type: "website",
     images: [
       {
+        url: "/ES8A4319.JPG",
+        secureUrl: "https://opentheinvite.vercel.app/ES8A4319.JPG",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        alt: "Hosni & Eyerusalem Royal Wedding Celebration",
+      },
+      {
         url: "/og-image.jpg",
         secureUrl: "https://opentheinvite.vercel.app/og-image.jpg",
         width: 1200,
@@ -32,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)",
     description: "You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation.",
-    images: ["https://opentheinvite.vercel.app/og-image.jpg"],
+    images: ["https://opentheinvite.vercel.app/ES8A4319.JPG"],
   },
   icons: {
     icon: [
@@ -86,8 +94,8 @@ export default function RootLayout({
         {/* Explicit OpenGraph & Social Share Meta for WhatsApp, Telegram, and Social Networks */}
         <meta property="og:title" content="Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)" />
         <meta property="og:description" content="You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation." />
-        <meta property="og:image" content="https://opentheinvite.vercel.app/og-image.jpg" />
-        <meta property="og:image:secure_url" content="https://opentheinvite.vercel.app/og-image.jpg" />
+        <meta property="og:image" content="https://opentheinvite.vercel.app/ES8A4319.JPG" />
+        <meta property="og:image:secure_url" content="https://opentheinvite.vercel.app/ES8A4319.JPG" />
         <meta property="og:image:type" content="image/jpeg" />
         <meta property="og:image:width" content="1200" />
         <meta property="og:image:height" content="630" />
@@ -96,7 +104,7 @@ export default function RootLayout({
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:title" content="Hosni & Eyerusalem | Save The Date (የሰርግ ጥሪ)" />
         <meta name="twitter:description" content="You are invited to celebrate the wedding of Hosni & Eyerusalem. Click to open your interactive invitation." />
-        <meta name="twitter:image" content="https://opentheinvite.vercel.app/og-image.jpg" />
+        <meta name="twitter:image" content="https://opentheinvite.vercel.app/ES8A4319.JPG" />
       </head>
       <body
         className="font-sans antialiased bg-[#051812] text-[#fef3c7] min-h-screen selection:bg-[#d4af37]/30 selection:text-amber-200"

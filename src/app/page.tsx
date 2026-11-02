@@ -23,7 +23,7 @@ function WeddingContent() {
   const searchParams = useSearchParams();
   const guestParam = searchParams.get('guest');
   const themeParam = searchParams.get('theme') as ThemeId | null;
-  const { setActiveGuestBySlug, setPreviewThemeId, activeTheme, weddingData } = useWedding();
+  const { setActiveGuestBySlug, setPreviewThemeId, setHasFullAccess, activeTheme, weddingData } = useWedding();
 
   useEffect(() => {
     if (guestParam) {
@@ -32,7 +32,23 @@ function WeddingContent() {
     if (themeParam && THEME_CONFIGS[themeParam]) {
       setPreviewThemeId(themeParam);
     }
-  }, [guestParam, themeParam, setActiveGuestBySlug, setPreviewThemeId]);
+
+    const hasFullParam =
+      searchParams.has('c') ||
+      searchParams.get('p') === '1' ||
+      searchParams.get('p') === 'all' ||
+      searchParams.get('p') === 'full' ||
+      searchParams.get('all') === '1' ||
+      searchParams.get('all') === 'true' ||
+      searchParams.get('join') === 'all' ||
+      searchParams.get('view') === 'all' ||
+      searchParams.get('celebrate') === '1' ||
+      searchParams.get('celebrate') === 'true';
+
+    if (hasFullParam) {
+      setHasFullAccess(true);
+    }
+  }, [guestParam, themeParam, searchParams, setActiveGuestBySlug, setPreviewThemeId, setHasFullAccess]);
 
   return (
     <main

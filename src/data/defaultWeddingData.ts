@@ -56,6 +56,16 @@ export const initialWeddingData: WeddingData = {
   schedule: [
     {
       id: "sch-1",
+      time: "ከ5:00 እስከ 8:30 (11:00 AM - 02:30 PM)",
+      title: "Wedding Reception & Lunch",
+      titleAmharic: "የምሳ እና የደስታ መጋራት ፕሮግራም",
+      description: "ከቤተሰብ እና ከወዳጅ ዘመድ ጋር የፍቅር ምሳ እና የደስታ ጊዜ።",
+      location: "አቃቂ አለም ባንክ እና ሙያ ቴክኒክ በስተግራ በሚወስደው መንገድ ወደታች ወረድ ብሎ",
+      icon: "UtensilsCrossed",
+      eventType: "reception"
+    },
+    {
+      id: "sch-2",
       time: "ከ9:00 እስከ 12:00 (03:00 PM - 06:00 PM)",
       title: "Holy Matrimony & Worship Ceremony",
       titleAmharic: "የቃልኪዳን እና የአምልኮ ጊዜ",
@@ -63,30 +73,32 @@ export const initialWeddingData: WeddingData = {
       location: "ልደታ መካነየሱስ (ከዲአፍሪክ ሆቴል ወረድ ብሎ አምስተኛ ፖሊስ ጣቢያ)",
       icon: "Church",
       eventType: "church"
-    },
-    // {
-    //   id: "sch-2",
-    //   time: "ከ12:30 ጀምሮ (06:30 PM Onwards)",
-    //   title: "Dinner & Celebration",
-    //   titleAmharic: "የእራት እና የደስታ መጋራት ፕሮግራም",
-    //   description: "ከቤተሰብ እና ከወዳጅ ዘመድ ጋር የፍቅር እራት እና የደስታ ጊዜ።",
-    //   location: "አዲስ አበባ (Addis Ababa)",
-    //   icon: "UtensilsCrossed",
-    //   eventType: "reception"
-    // }
+    }
   ],
 
   venues: [
     {
       id: "ven-1",
+      name: "Wedding Reception & Lunch",
+      nameAmharic: "የምሳ ፕሮግራም",
+      tag: "የምሳ እና የደስታ መጋራት (Reception)",
+      address: "📍አቃቂ አለም ባንክ እና ሙያ ቴክኒክ በስተግራ በሚወስደው መንገድ ወደታች ወረድ ብሎ፣ አዲስ አበባ",
+      time: "ከ5:00 እስከ 8:30 (11:00 AM - 02:30 PM)",
+      imageUrl: "/images/ethiopian_wedding_2couple.jpg",
+      googleMapsUrl: "https://maps.google.com/?q=Akaki+Alem+Bank+Addis+Ababa",
+      eventType: "reception"
+    },
+    {
+      id: "ven-2",
       name: "Lideta Mekane Yesus Church",
       nameAmharic: "ልደታ መካነየሱስ",
       tag: "የቃልኪዳን እና የአምልኮ ጊዜ (Ceremony)",
       address: "📍ከዲአፍሪክ ሆቴል ወረድ ብሎ አምስተኛ ፖሊስ ጣቢያ አካባቢ፣ አዲስአበባ, ኢትዮጵያ",
-      time: "ከ9:00 እስከ 12:00",
+      time: "ከ9:00 እስከ 12:00 (03:00 PM - 06:00 PM)",
       imageUrl: "/images/ethiopian_couple_holding_hands.jpg",
       googleMapsUrl: "https://maps.google.com/?q=Lideta+Mekane+Yesus+Church+Addis+Ababa",
-      coordinates: { lat: 9.0125, lng: 38.7410 }
+      coordinates: { lat: 9.0125, lng: 38.7410 },
+      eventType: "church"
     }
   ],
 
@@ -305,5 +317,5 @@ export const initialWeddingData: WeddingData = {
   storyCardTransitionDuration: 0.75,
   storyCardAutoAdvance: true,
   storyCardPauseOnHover: true,
-  dataVersion: 3,
+  dataVersion: 5,
 };

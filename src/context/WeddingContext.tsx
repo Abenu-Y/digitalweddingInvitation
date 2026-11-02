@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { WeddingData, Guest, ThemeId, WishMessage, ScheduleItem, VenueItem, BankAccount } from '@/types/wedding';
+import { WeddingData, Guest, ThemeId, EventType, WishMessage, ScheduleItem, VenueItem, BankAccount } from '@/types/wedding';
 import { initialWeddingData } from '@/data/defaultWeddingData';
 import { THEME_CONFIGS, ThemeConfig } from '@/styles/themes';
 
@@ -54,6 +54,11 @@ interface WeddingContextType {
   // Database Status
   mongoStatus: { connected: boolean; latencyMs: number; database: string; error?: string } | null;
 
+  // Access Scope (Full Celebration vs Church Only)
+  hasFullAccess: boolean;
+  setHasFullAccess: (full: boolean) => void;
+  isEventAllowed: (eventType: EventType) => boolean;
+
   // Reset & Code Synchronization
   resetToDefault: () => void;
   forceSyncCodeDefaults: () => void;
@@ -75,6 +80,8 @@ export const computeWeddingDataSignature = (data: WeddingData): string => {
     data.backgroundMusicTitle,
     data.storyCardDurationSeconds,
     data.storyCardTransitionDuration,
+    data.schedule?.map((s) => `${s.id}:${s.time}`).join(','),
+    data.venues?.map((v) => `${v.id}:${v.time}`).join(','),
     data.bankAccounts?.map((b) => `${b.id}:${b.accountName}:${b.accountNumber}`).join('|'),
   ].join(':::');
 };
@@ -95,6 +102,51 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
     database: string;
     error?: string;
   } | null>(null);
+
+  // Full Celebration access state (persisted in sessionStorage)
+  const [hasFullAccess, setHasFullAccessState] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = window.sessionStorage.getItem('yene_serg_full_access');
+        if (stored === '1') {
+          setHasFullAccessState(true);
+        }
+      } catch (e) {}
+    }
+  }, []);
+
+  const setHasFullAccess = (full: boolean) => {
+    setHasFullAccessState(full);
+    if (typeof window !== 'undefined') {
+      try {
+        if (full) {
+          window.sessionStorage.setItem('yene_serg_full_access', '1');
+        } else {
+          window.sessionStorage.removeItem('yene_serg_full_access');
+        }
+      } catch (e) {}
+    }
+  };
+
+  const isEventAllowed = (eventType: EventType): boolean => {
+    // 1. Registered guest profile (via /invite/[slug])
+    if (currentGuest) {
+      if (!currentGuest.invitedEvents || currentGuest.invitedEvents.length === 0) {
+        return true;
+      }
+      return currentGuest.invitedEvents.includes(eventType);
+    }
+
+    // 2. Full celebration access (via /celebrate, ?c=1, ?p=all, etc.)
+    if (hasFullAccess) {
+      return true;
+    }
+
+    // 3. Default general view: Church ceremony only
+    return eventType === 'church';
+  };
 
   // Background SWR fetch from MongoDB (Status & Wishes)
   useEffect(() => {
@@ -663,6 +715,9 @@ export const WeddingProvider: React.FC<{ children: React.ReactNode }> = ({ child
         toggleApproveWish,
         deleteWish,
         mongoStatus,
+        hasFullAccess,
+        setHasFullAccess,
+        isEventAllowed,
         resetToDefault,
         forceSyncCodeDefaults,
       }}
