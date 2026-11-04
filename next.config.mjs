@@ -8,6 +8,14 @@ const nextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: '/images/:path*.JPG',
+        destination: '/images/:path*.jpg',
+      },
+    ];
+  },
 };
 
 export default nextConfig;

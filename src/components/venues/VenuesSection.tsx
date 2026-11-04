@@ -67,7 +67,7 @@ export const VenuesSection: React.FC = () => {
                   className="absolute inset-0 bg-cover group-hover:scale-105 transition-transform duration-700"
                   style={{
                     backgroundImage: `url(${venue.imageUrl})`,
-                    backgroundPosition: venue.imagePosition || 'center 65%',
+                    backgroundPosition: venue.imagePosition || 'center',
                   }}
                 />
                 <div

@@ -30,7 +30,7 @@ export const initialWeddingData: WeddingData = {
   backgroundMusicUrl: "/G&B wedding (6).mp3",
   backgroundMusicTitle: "Hosni & Eyerusalem Royal Melody (የሰርግ ዜማ)",
 
-  heroImageUrl: "/images/ethiopian_wedding_couple.JPG",
+  heroImageUrl: "/images/ethiopian_wedding_couple.jpg",
   coupleAvatarUrl: "/images/ethiopian_couple_holding_hands.jpg",
 
 
@@ -84,8 +84,8 @@ export const initialWeddingData: WeddingData = {
       tag: "",
       address: "📍አቃቂ አለም ባንክ ፡ አቃቂ ቴክኒክ እና ሙያ አደባባይ በስተግራ በሚወስደው መንገድ ወደታች ወረድ ብሎ",
       time: "ከ5:00 እስከ 8:30 (11:00 AM - 02:30 PM)",
-      imageUrl: "/images/ES8A4798.JPG",
-      imagePosition: "center 68%",
+      imageUrl: "/images/venue_lunch.jpg",
+      imagePosition: "center",
       googleMapsUrl: "https://maps.google.com/?q=Akaki+Alem+Bank+Addis+Ababa",
       eventType: "reception"
     },
@@ -96,8 +96,8 @@ export const initialWeddingData: WeddingData = {
       tag: "የቃልኪዳን እና የአምልኮ ጊዜ (Ceremony)",
       address: "📍ከዲአፍሪክ ሆቴል ወረድ ብሎ አምስተኛ ፖሊስ ጣቢያ አካባቢ፣ አዲስአበባ, ኢትዮጵያ",
       time: "ከ9:00 እስከ 12:00 (03:00 PM - 06:00 PM)",
-      imageUrl: "/images/ethiopian_couple_holding_hands.JPG",
-      imagePosition: "center 65%",
+      imageUrl: "/images/venue_church.jpg",
+      imagePosition: "center",
       googleMapsUrl: "https://maps.google.com/?q=Lideta+Mekane+Yesus+Church+Addis+Ababa",
       coordinates: { lat: 9.0125, lng: 38.7410 },
       eventType: "church"
@@ -319,5 +319,5 @@ export const initialWeddingData: WeddingData = {
   storyCardTransitionDuration: 0.75,
   storyCardAutoAdvance: true,
   storyCardPauseOnHover: true,
-  dataVersion: 7,
+  dataVersion: 8,
 };

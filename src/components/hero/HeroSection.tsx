@@ -81,7 +81,7 @@ END:VCALENDAR`;
       <div className="absolute inset-0 z-0">
         <div
           className="absolute inset-0 bg-cover bg-center filter brightness-[0.70] scale-105 transition-transform duration-10000"
-          style={{ backgroundImage: `url(${weddingData.heroImageUrl || '/images/ethiopian_wedding_couple.JPG'})` }}
+          style={{ backgroundImage: `url(${weddingData.heroImageUrl || '/images/ethiopian_wedding_couple.jpg'})` }}
         />
         <div
           style={{

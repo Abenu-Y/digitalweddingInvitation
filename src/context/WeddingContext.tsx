@@ -81,7 +81,8 @@ export const computeWeddingDataSignature = (data: WeddingData): string => {
     data.storyCardDurationSeconds,
     data.storyCardTransitionDuration,
     data.schedule?.map((s) => `${s.id}:${s.time}`).join(','),
-    data.venues?.map((v) => `${v.id}:${v.time}`).join(','),
+    data.heroImageUrl,
+    data.venues?.map((v) => `${v.id}:${v.imageUrl}:${v.imagePosition}`).join(','),
     data.bankAccounts?.map((b) => `${b.id}:${b.accountName}:${b.accountNumber}`).join('|'),
   ].join(':::');
 };
